@@ -234,6 +234,76 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quneitra'**
   String get governorateQuneitra;
+
+  // إضافة النصوص الجديدة
+  String get chatBot;
+  String get myTrips;
+  String get myProfile;
+  String get welcomeBack;
+  String get hello;
+  String get enjoyServices;
+  String get loginToAccess;
+  String get login;
+  String get appSettings;
+  String get language;
+  String get chooseLanguage;
+  String get darkMode;
+  String get notifications;
+  String get aboutAndHelp;
+  String get aboutApp;
+  String get help;
+  String get privacyPolicy;
+  String get version;
+  String get helpGuide;
+  String get privacyInfo;
+  
+  // نصوص تسجيل الدخول
+  String get welcomeToSham;
+  String get chooseLoginMethod;
+  String get loginWithApple;
+  String get loginWithGoogle;
+  String get loginWithFacebook;
+  String get loginWithPhone;
+  String get or;
+  String get createNewAccount;
+  String get cancel;
+  
+  // نصوص إضافية
+  String get termsOfService;
+  String get termsAndConditions;
+  String get close;
+  String get appDescription;
+  String get howToUse;
+  String get step1;
+  String get step2;
+  String get step3;
+  String get step4;
+  String get step5;
+  String get step6;
+  String get privacyDescription;
+  String get termsDescription;
+  String get darkModeTitle;
+  String get darkModeSubtitle;
+  String get notificationsTitle;
+  String get notificationsSubtitle;
+  String get enterPhoneForCode;
+  String get phoneNumber;
+  String get sendCode;
+  String get fullName;
+  String get email;
+  String get password;
+  String get confirmPassword;
+  String get createAccount;
+  String get accountInfo;
+  String get name;
+  String get logout;
+  String get myTripsTitle;
+  String get noTripsMessage;
+  String get transportType;
+  String get bus;
+  String get train;
+  String get flight;
+  String get tripDetails;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
