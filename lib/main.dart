@@ -1686,16 +1686,46 @@ class _SearchScreenState extends State<SearchScreen> {
                         children: [
                           Expanded(
                             flex: 1,
-                            child: _buildSearchField(
-                              label: 'من أين',
-                              icon: Icons.location_on_outlined,
-                              value: fromCity,
-                              items: selectedTransportType == 'flight' ? flightCities : cities,
-                              onChanged: (value) {
-                                setState(() {
-                                  fromCity = value;
-                                });
+                            child: GestureDetector(
+                              onTap: () async {
+                                final selected = await Navigator.of(context).push<String>(
+                                  MaterialPageRoute(
+                                    builder: (_) => GovernoratePickerScreen(
+                                      title: 'من أين',
+                                      governorates: cities,
+                                    ),
+                                  ),
+                                );
+                                if (selected != null) {
+                                  setState(() {
+                                    fromCity = selected;
+                                  });
+                                }
                               },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.location_on_outlined, size: 20, color: Color(0xFF1E3A8A)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        fromCity ?? 'من أين',
+                                        style: TextStyle(
+                                          color: fromCity == null ? const Color(0xFF6B7280) : Colors.black,
+                                          fontSize: 16,
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1727,16 +1757,46 @@ class _SearchScreenState extends State<SearchScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             flex: 1,
-                            child: _buildSearchField(
-                              label: 'إلى أين',
-                              icon: Icons.location_on,
-                              value: toCity,
-                              items: selectedTransportType == 'flight' ? flightCities : cities,
-                              onChanged: (value) {
-                                setState(() {
-                                  toCity = value;
-                                });
+                            child: GestureDetector(
+                              onTap: () async {
+                                final selected = await Navigator.of(context).push<String>(
+                                  MaterialPageRoute(
+                                    builder: (_) => GovernoratePickerScreen(
+                                      title: 'إلى أين',
+                                      governorates: cities,
+                                    ),
+                                  ),
+                                );
+                                if (selected != null) {
+                                  setState(() {
+                                    toCity = selected;
+                                  });
+                                }
                               },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.location_on, size: 20, color: Color(0xFF1E3A8A)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        toCity ?? 'إلى أين',
+                                        style: TextStyle(
+                                          color: toCity == null ? const Color(0xFF6B7280) : Colors.black,
+                                          fontSize: 16,
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -4300,6 +4360,33 @@ class _CustomerRegistrationScreenState extends State<CustomerRegistrationScreen>
           customerPhone: phoneController.text,
           customerId: idController.text,
           paymentMethod: paymentMethod,
+        ),
+      ),
+    );
+  }
+}
+
+// تعريف GovernoratePickerScreen إذا لم يكن موجوداً
+class GovernoratePickerScreen extends StatelessWidget {
+  final String title;
+  final List<String> governorates;
+  const GovernoratePickerScreen({super.key, required this.title, required this.governorates});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title, style: const TextStyle(fontFamily: 'Cairo')),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: governorates.map((gov) => ListTile(
+            title: Text(gov, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            onTap: () {
+              Navigator.of(context).pop(gov);
+            },
+          )).toList(),
         ),
       ),
     );
