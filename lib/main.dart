@@ -15,10 +15,17 @@ class ShamApp extends StatefulWidget {
 
 class _ShamAppState extends State<ShamApp> {
   Locale _locale = const Locale('ar');
+  bool _isDarkMode = false;
 
   void setLocale(Locale locale) {
     setState(() {
       _locale = locale;
+    });
+  }
+
+  void toggleDarkMode() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
     });
   }
 
@@ -88,14 +95,32 @@ class _ShamAppState extends State<ShamApp> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
-      home: MainNavigation(onLocaleChange: setLocale),
+      darkTheme: ThemeData.dark().copyWith(
+        primaryColor: const Color(0xFF1E3A8A),
+        scaffoldBackgroundColor: const Color(0xFF181A20),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E3A8A),
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: MainNavigation(onLocaleChange: setLocale, onToggleDarkMode: toggleDarkMode, isDarkMode: _isDarkMode),
     );
   }
 }
 
 class MainNavigation extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
-  const MainNavigation({super.key, required this.onLocaleChange});
+  final VoidCallback onToggleDarkMode;
+  final bool isDarkMode;
+  const MainNavigation({super.key, required this.onLocaleChange, required this.onToggleDarkMode, required this.isDarkMode});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -107,10 +132,11 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      const HomePage(),
+      HomePage(onToggleDarkMode: widget.onToggleDarkMode, isDarkMode: widget.isDarkMode),
       const ChatBotScreen(),
-      const MyTripsScreen(), // إضافة صفحة رحلاتي
+      const MyTripsScreen(),
       AccountScreen(onLocaleChange: widget.onLocaleChange),
+      const FavoriteCompaniesScreen(),
     ];
     return Scaffold(
       body: pages[_selectedIndex],
@@ -126,19 +152,23 @@ class _MainNavigationState extends State<MainNavigation> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: AppLocalizations.of(context)?.welcome ?? 'الرئيسية',
+            icon: Icon(Icons.home),
+            label: 'الصفحة الرئيسية',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.chat),
+            icon: Icon(Icons.chat),
             label: AppLocalizations.of(context)?.chatBot ?? 'شات بوت',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.confirmation_number),
+            icon: Icon(Icons.confirmation_number),
             label: AppLocalizations.of(context)?.myTrips ?? 'رحلاتي',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.person),
+            icon: Icon(Icons.favorite),
+            label: 'المفضلة',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
             label: AppLocalizations.of(context)?.myProfile ?? 'ملفي الشخصي',
           ),
         ],
@@ -149,11 +179,13 @@ class _MainNavigationState extends State<MainNavigation> {
 
 // الصفحة الرئيسية الجديدة (OOP)
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final VoidCallback? onToggleDarkMode;
+  final bool? isDarkMode;
+  const HomePage({super.key, this.onToggleDarkMode, this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
-    return const SearchScreen();
+    return SearchScreen(onToggleDarkMode: onToggleDarkMode, isDarkMode: isDarkMode);
   }
 }
 
@@ -169,7 +201,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   bool isDarkMode = false;
   bool isNotificationsEnabled = true;
-  String selectedLanguage = 'العربية';
+  String? selectedLanguage;
   bool isLoggedIn = false;
   
   // متغيرات تسجيل الدخول
@@ -197,6 +229,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
+    selectedLanguage = AppLocalizations.of(context)?.selectLanguage ?? 'اختر اللغة';
     return Directionality(
       textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
@@ -222,6 +255,47 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             ],
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: PopupMenuButton<Locale>(
+                icon: Row(
+                  children: [
+                    const Icon(Icons.language, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Text(
+                      Localizations.localeOf(context).languageCode == 'ar' ? 'العربية' : Localizations.localeOf(context).languageCode == 'en' ? 'English' : 'Türkçe',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                    ),
+                  ],
+                ),
+                tooltip: 'تغيير اللغة',
+                onSelected: (locale) {
+                  widget.onLocaleChange?.call(locale);
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: const Locale('ar'),
+                    child: Row(
+                      children: const [Text('🇸🇾', style: TextStyle(fontSize: 20)), SizedBox(width: 8), Text('العربية')],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: const Locale('en'),
+                    child: Row(
+                      children: const [Text('🇺🇸', style: TextStyle(fontSize: 20)), SizedBox(width: 8), Text('English')],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: const Locale('tr'),
+                    child: Row(
+                      children: const [Text('🇹🇷', style: TextStyle(fontSize: 20)), SizedBox(width: 8), Text('Türkçe')],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -297,12 +371,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   _buildLoginButton(),
                   const SizedBox(height: 24),
                 ],
-                
-                // إعدادات التطبيق
-                _buildAppSettingsSection(),
-                
-                const SizedBox(height: 24),
-                
+               
                 // حول التطبيق والمساعدة
                 _buildAboutAndHelpSection(),
                 
@@ -405,8 +474,8 @@ class _AccountScreenState extends State<AccountScreen> {
           // شروط الاستخدام
           _buildAboutItem(
             icon: Icons.description,
-            title: 'شروط الاستخدام',
-            subtitle: 'الشروط والأحكام',
+            title: AppLocalizations.of(context)?.termsOfService ?? 'شروط الاستخدام',
+            subtitle: AppLocalizations.of(context)?.termsInfo ?? 'الشروط والأحكام',
             onTap: () {
               _showTermsDialog();
             },
@@ -1222,9 +1291,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'إنشاء حساب جديد',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)?.createNewAccount ?? 'إنشاء حساب جديد',
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Cairo',
@@ -1233,20 +1302,20 @@ class _AccountScreenState extends State<AccountScreen> {
                 const SizedBox(height: 24),
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'الاسم الكامل',
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)?.fullName ?? 'الاسم الكامل',
+                    prefixIcon: const Icon(Icons.person),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'البريد الإلكتروني',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)?.email ?? 'البريد الإلكتروني',
+                    prefixIcon: const Icon(Icons.email),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1254,7 +1323,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   controller: passwordController,
                   obscureText: !isPasswordVisible,
                   decoration: InputDecoration(
-                    labelText: 'كلمة المرور',
+                    labelText: AppLocalizations.of(context)?.password ?? 'كلمة المرور',
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -1274,7 +1343,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   controller: confirmPasswordController,
                   obscureText: !isConfirmPasswordVisible,
                   decoration: InputDecoration(
-                    labelText: 'تأكيد كلمة المرور',
+                    labelText: AppLocalizations.of(context)?.confirmPassword ?? 'تأكيد كلمة المرور',
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -1297,7 +1366,15 @@ class _AccountScreenState extends State<AccountScreen> {
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: const Text('إلغاء'),
+                        child: Text(
+                          AppLocalizations.of(context)?.cancel ?? 'إلغاء',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
                       ),
                     ),
                     Expanded(
@@ -1306,7 +1383,15 @@ class _AccountScreenState extends State<AccountScreen> {
                           Navigator.of(context).pop();
                           // TODO: Implement account creation
                         },
-                        child: const Text('إنشاء الحساب'),
+                        child: Text(
+                          AppLocalizations.of(context)?.createAccount ?? 'إنشاء الحساب',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -1422,6 +1507,7 @@ class MyTripsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
+    final trips = TripBookingStore.bookings.reversed.toList();
     return Directionality(
       textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
@@ -1432,7 +1518,7 @@ class MyTripsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.confirmation_number, color: Colors.white),
@@ -1442,36 +1528,132 @@ class MyTripsScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.confirmation_number,
-                size: 64,
-                color: Color(0xFF1E3A8A),
+        body: trips.isEmpty
+            ? const Center(
+                child: Text('ستظهر هنا جميع رحلاتك المحجوزة', style: TextStyle(fontFamily: 'Cairo')),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: trips.length,
+                itemBuilder: (context, index) {
+                  final trip = trips[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                trip.type == 'bus' ? Icons.directions_bus : trip.type == 'train' ? Icons.train : Icons.flight,
+                                color: const Color(0xFF1E3A8A),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(trip.company, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text('${trip.from} → ${trip.to}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                          const SizedBox(height: 8),
+                          Text('تاريخ الرحلة: ${trip.date.year}/${trip.date.month.toString().padLeft(2, '0')}/${trip.date.day.toString().padLeft(2, '0')}', style: const TextStyle(fontFamily: 'Cairo')),
+                          Text('وقت الإقلاع: ${trip.departureTime}', style: const TextStyle(fontFamily: 'Cairo')),
+                          Text('وقت الوصول: ${trip.arrivalTime}', style: const TextStyle(fontFamily: 'Cairo')),
+                          const SizedBox(height: 8),
+                          Text('السعر: ${trip.price.toStringAsFixed(0)} ل.س', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final now = DateTime.now();
+                              final tripDateTime = DateTime(trip.date.year, trip.date.month, trip.date.day);
+                              final diff = tripDateTime.difference(now);
+                              if (diff.inHours < 6) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('لا يمكن الإلغاء'),
+                                    content: const Text('لا يمكن إلغاء التذكرة قبل أقل من 6 ساعات من موعد الرحلة.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(),
+                                        child: const Text('حسناً'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return;
+                              }
+                              String name = '', id = '', phone = '', code = '';
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('تأكيد إلغاء التذكرة'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          decoration: const InputDecoration(labelText: 'الاسم الكامل'),
+                                          onChanged: (v) => name = v,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextField(
+                                          decoration: const InputDecoration(labelText: 'رقم الهوية أو الجواز'),
+                                          onChanged: (v) => id = v,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextField(
+                                          decoration: const InputDecoration(labelText: 'رقم الهاتف'),
+                                          keyboardType: TextInputType.phone,
+                                          onChanged: (v) => phone = v,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextField(
+                                          decoration: const InputDecoration(labelText: 'كود التأكيد'),
+                                          onChanged: (v) => code = v,
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(),
+                                        child: const Text('إلغاء'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          if (name.isNotEmpty && id.isNotEmpty && phone.isNotEmpty && code == '123456') {
+                                            TripBookingStore.bookings.remove(trip);
+                                            Navigator.of(context).pop();
+                                            (context as Element).markNeedsBuild();
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إلغاء التذكرة بنجاح')));
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى تعبئة جميع الحقول بشكل صحيح، الكود هو 123456')));
+                                          }
+                                        },
+                                        child: const Text('تأكيد الإلغاء'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.cancel, color: Colors.red),
+                            label: const Text('إلغاء التذكرة', style: TextStyle(color: Colors.red)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              SizedBox(height: 16),
-              Text(
-                'رحلاتي',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'ستظهر هنا جميع رحلاتك المحجوزة',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6B7280),
-                  fontFamily: 'Cairo',
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1479,7 +1661,9 @@ class MyTripsScreen extends StatelessWidget {
 
 // شاشة البحث الرئيسية
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final VoidCallback? onToggleDarkMode;
+  final bool? isDarkMode;
+  const SearchScreen({super.key, this.onToggleDarkMode, this.isDarkMode});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -1509,7 +1693,15 @@ class _SearchScreenState extends State<SearchScreen> {
   ];
 
   final List<String> flightCities = [
+    'حلب',
     'دمشق',
+    'الحسكة',
+  ];
+
+  final List<String> trainCities = [
+    'ريف دمشق',
+    'حمص',
+    'حماة',
     'حلب',
   ];
 
@@ -1526,7 +1718,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.search, color: Colors.white),
@@ -1534,7 +1726,7 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  AppLocalizations.of(context)?.appTitle ?? 'مواصلات الشام',
+                  'الصفحة الرئيسية',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 18),
                 ),
@@ -1542,6 +1734,11 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ),
           actions: [
+            IconButton(
+              icon: Icon(widget.isDarkMode == true ? Icons.dark_mode : Icons.light_mode),
+              onPressed: widget.onToggleDarkMode,
+              tooltip: 'تبديل الوضع',
+            ),
             IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () {
@@ -1692,7 +1889,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   MaterialPageRoute(
                                     builder: (_) => GovernoratePickerScreen(
                                       title: 'من أين',
-                                      governorates: cities,
+                                      governorates: selectedTransportType == 'train' ? trainCities : (selectedTransportType == 'flight' ? flightCities : cities),
                                     ),
                                   ),
                                 );
@@ -1763,7 +1960,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   MaterialPageRoute(
                                     builder: (_) => GovernoratePickerScreen(
                                       title: 'إلى أين',
-                                      governorates: cities,
+                                      governorates: selectedTransportType == 'train' ? trainCities : (selectedTransportType == 'flight' ? flightCities : cities),
                                     ),
                                   ),
                                 );
@@ -1882,6 +2079,16 @@ class _SearchScreenState extends State<SearchScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (_) => FlightResultsScreen(
+                                        from: fromCity!,
+                                        to: toCity!,
+                                        date: selectedDate!,
+                                      ),
+                                    ),
+                                  );
+                                } else if (selectedTransportType == 'train') {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => TrainResultsScreen(
                                         from: fromCity!,
                                         to: toCity!,
                                         date: selectedDate!,
@@ -2395,6 +2602,17 @@ class BusCompaniesScreen extends StatelessWidget {
                       fontFamily: 'Cairo',
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    FavoriteCompaniesStore.isFavorite('bus:${company.name}') ? Icons.favorite : Icons.favorite_border,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    FavoriteCompaniesStore.toggle('bus:${company.name}');
+                    (context as Element).markNeedsBuild();
+                  },
+                  tooltip: 'إضافة إلى المفضلة',
                 ),
               ],
             ),
@@ -3127,6 +3345,12 @@ class FlightResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
+    // بيانات الرحلات المتاحة
+    final List<Map<String, String>> routes = [
+      {'from': 'حلب', 'to': 'دمشق', 'departure': '09:00 صباحاً', 'arrival': '10:30 صباحاً'},
+      {'from': 'دمشق', 'to': 'الحسكة', 'departure': '12:00 ظهراً', 'arrival': '14:00 ظهراً'},
+    ];
+    final List<Map<String, String>> available = routes.where((r) => r['from'] == from && r['to'] == to).toList();
     return Directionality(
       textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
@@ -3137,7 +3361,7 @@ class FlightResultsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.flight, color: Colors.white),
@@ -3147,36 +3371,70 @@ class FlightResultsScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.flight,
-                size: 64,
-                color: Color(0xFF1E3A8A),
+        body: available.isEmpty
+            ? const Center(child: Text('لا توجد رحلات متاحة لهذا المسار'))
+            : ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: available.length,
+                itemBuilder: (context, index) {
+                  final flight = available[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.flight, color: Color(0xFF1E3A8A)),
+                              const SizedBox(width: 8),
+                              const Text('شركة الطيران السورية', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text('${flight['from']} → ${flight['to']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                          const SizedBox(height: 8),
+                          Text('وقت الإقلاع: ${flight['departure']}', style: const TextStyle(fontFamily: 'Cairo')),
+                          Text('وقت الوصول: ${flight['arrival']}', style: const TextStyle(fontFamily: 'Cairo')),
+                          const SizedBox(height: 8),
+                          Text('السعر: 150,000 ل.س', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                          Text('المقاعد المتاحة: 50', style: const TextStyle(fontFamily: 'Cairo')),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              TripBookingStore.add(TripBooking(
+                                type: 'flight',
+                                from: flight['from']!,
+                                to: flight['to']!,
+                                date: date,
+                                company: 'شركة الطيران السورية',
+                                departureTime: flight['departure']!,
+                                arrivalTime: flight['arrival']!,
+                                price: 150000.0,
+                              ));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحجز!')));
+                            },
+                            child: const Text('احجز الآن'),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              FavoriteCompaniesStore.isFavorite('flight:شركة الطيران السورية') ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                            ),
+                            onPressed: () {
+                              FavoriteCompaniesStore.toggle('flight:شركة الطيران السورية');
+                              (context as Element).markNeedsBuild();
+                            },
+                            tooltip: 'إضافة إلى المفضلة',
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              SizedBox(height: 16),
-              Text(
-                'رحلات الطيران',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'اختر رحلة الطيران المفضلة',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6B7280),
-                  fontFamily: 'Cairo',
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -4387,6 +4645,947 @@ class GovernoratePickerScreen extends StatelessWidget {
               Navigator.of(context).pop(gov);
             },
           )).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+// 1. تعريف شاشة نتائج القطار:
+class TrainResultsScreen extends StatelessWidget {
+  final String from;
+  final String to;
+  final DateTime date;
+  const TrainResultsScreen({super.key, required this.from, required this.to, required this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    // بيانات خط القطار
+    final List<String> route = [
+      'ريف دمشق', 'حمص', 'حماة', 'حلب'
+    ];
+    final bool isForward = route.indexOf(from) < route.indexOf(to);
+    final List<String> stations = isForward ? route : route.reversed.toList();
+    final int startIndex = stations.indexOf(from);
+    final int endIndex = stations.indexOf(to);
+    final List<String> tripStations = stations.sublist(startIndex, endIndex + 1);
+    final String company = 'شركة السكك الحديدية السورية';
+    final String departureTime = isForward ? '08:00 صباحاً' : '15:00 مساءً';
+    final String arrivalTime = isForward ? '13:00 ظهراً' : '20:00 مساءً';
+    final double price = 5000.0;
+    final int availableSeats = 120;
+
+    return Directionality(
+      textDirection: Localizations.localeOf(context).languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.train, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              const Text('رحلة القطار'),
+            ],
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('$from → $to', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                    const SizedBox(height: 8),
+                    Text('${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}', style: const TextStyle(fontFamily: 'Cairo')),
+                    const SizedBox(height: 8),
+                    Text('المحطات: ${tripStations.join(' → ')}', style: const TextStyle(fontFamily: 'Cairo')),
+                    const SizedBox(height: 8),
+                    Text('الشركة: $company', style: const TextStyle(fontFamily: 'Cairo')),
+                    const SizedBox(height: 8),
+                    Text('وقت الانطلاق: $departureTime', style: const TextStyle(fontFamily: 'Cairo')),
+                    Text('وقت الوصول: $arrivalTime', style: const TextStyle(fontFamily: 'Cairo')),
+                    const SizedBox(height: 8),
+                    Text('السعر: ${price.toStringAsFixed(0)} ل.س', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                    Text('المقاعد المتاحة: $availableSeats', style: const TextStyle(fontFamily: 'Cairo')),
+                    IconButton(
+                      icon: Icon(
+                        FavoriteCompaniesStore.isFavorite('train:$company') ? Icons.favorite : Icons.favorite_border,
+                        color: Colors.red,
+                      ),
+                      onPressed: () {
+                        FavoriteCompaniesStore.toggle('train:$company');
+                        (context as Element).markNeedsBuild();
+                      },
+                      tooltip: 'إضافة إلى المفضلة',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => TrainBookingConfirmationScreen(
+                        from: from,
+                        to: to,
+                        date: date,
+                        company: company,
+                        departureTime: departureTime,
+                        arrivalTime: arrivalTime,
+                        price: price,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('احجز الآن'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// صفحة تأكيد معلومات الحجز للقطار
+class TrainBookingConfirmationScreen extends StatefulWidget {
+  final String from;
+  final String to;
+  final DateTime date;
+  final String company;
+  final String departureTime;
+  final String arrivalTime;
+  final double price;
+  const TrainBookingConfirmationScreen({super.key, required this.from, required this.to, required this.date, required this.company, required this.departureTime, required this.arrivalTime, required this.price});
+
+  @override
+  State<TrainBookingConfirmationScreen> createState() => _TrainBookingConfirmationScreenState();
+}
+
+class _TrainBookingConfirmationScreenState extends State<TrainBookingConfirmationScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  bool isIdPassport = false; // false: هوية، true: جواز
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    idController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return Directionality(
+      textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('تأكيد معلومات الحجز'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('الاسم الكامل', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'الاسم الكامل',
+                          prefixIcon: Icon(Icons.person),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isIdPassport = false;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: !isIdPassport ? const Color(0xFF1E3A8A) : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF1E3A8A)),
+                                ),
+                                child: Center(
+                                  child: Text('رقم الهوية', style: TextStyle(color: !isIdPassport ? Colors.white : const Color(0xFF1E3A8A), fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isIdPassport = true;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isIdPassport ? const Color(0xFF1E3A8A) : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF1E3A8A)),
+                                ),
+                                child: Center(
+                                  child: Text('جواز السفر', style: TextStyle(color: isIdPassport ? Colors.white : const Color(0xFF1E3A8A), fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: idController,
+                        decoration: InputDecoration(
+                          labelText: isIdPassport ? 'رقم جواز السفر' : 'رقم الهوية',
+                          prefixIcon: const Icon(Icons.credit_card),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'رقم الهاتف',
+                          prefixIcon: Icon(Icons.phone),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: nameController.text.isNotEmpty && idController.text.isNotEmpty && phoneController.text.isNotEmpty
+                      ? () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => TrainTicketScreen(
+                                from: widget.from,
+                                to: widget.to,
+                                date: widget.date,
+                                company: widget.company,
+                                departureTime: widget.departureTime,
+                                arrivalTime: widget.arrivalTime,
+                                price: widget.price,
+                                customerName: nameController.text,
+                                customerId: idController.text,
+                                customerPhone: phoneController.text,
+                                idType: isIdPassport ? 'جواز السفر' : 'رقم الهوية',
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  child: const Text('تأكيد الحجز'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// صفحة التذكرة الأنيقة للقطار
+class TrainTicketScreen extends StatelessWidget {
+  final String from;
+  final String to;
+  final DateTime date;
+  final String company;
+  final String departureTime;
+  final String arrivalTime;
+  final double price;
+  final String customerName;
+  final String customerId;
+  final String customerPhone;
+  final String idType;
+  const TrainTicketScreen({super.key, required this.from, required this.to, required this.date, required this.company, required this.departureTime, required this.arrivalTime, required this.price, required this.customerName, required this.customerId, required this.customerPhone, required this.idType});
+
+  @override
+  Widget build(BuildContext context) {
+    final bookingNumber = 'TR${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+    final locale = Localizations.localeOf(context);
+    return Directionality(
+      textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('تذكرة القطار'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1E3A8A).withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.train, color: Colors.white, size: 32),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          company,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Cairo'),
+                        ),
+                      ),
+                      Text(
+                        'رقم الحجز: $bookingNumber',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Cairo'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('من', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(from, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Cairo')),
+                            Text(departureTime, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('إلى', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(to, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Cairo')),
+                            Text(arrivalTime, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('الاسم', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(idType, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerId, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('الهاتف', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerPhone, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('السعر', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text('${price.toStringAsFixed(0)} ل.س', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF1E3A8A),
+                    ),
+                    child: const Text('العودة للرئيسية'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 1. كلاس لتخزين الرحلات المحجوزة
+class TripBooking {
+  final String type; // bus/train/flight
+  final String from;
+  final String to;
+  final DateTime date;
+  final String company;
+  final String departureTime;
+  final String arrivalTime;
+  final double price;
+  TripBooking({required this.type, required this.from, required this.to, required this.date, required this.company, required this.departureTime, required this.arrivalTime, required this.price});
+}
+
+class TripBookingStore {
+  static final List<TripBooking> bookings = [];
+  static void add(TripBooking booking) {
+    bookings.add(booking);
+  }
+}
+
+class FavoriteCompaniesScreen extends StatelessWidget {
+  const FavoriteCompaniesScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final favs = FavoriteCompaniesStore.favorites.toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('المفضلة'),
+      ),
+      body: favs.isEmpty
+          ? const Center(child: Text('لا توجد شركات مفضلة بعد', style: TextStyle(fontFamily: 'Cairo')))
+          : ListView.builder(
+              itemCount: favs.length,
+              itemBuilder: (context, index) {
+                final key = favs[index];
+                final parts = key.split(':');
+                final type = parts[0];
+                final name = parts.sublist(1).join(':');
+                return ListTile(
+                  leading: Icon(
+                    type == 'bus' ? Icons.directions_bus : type == 'train' ? Icons.train : Icons.flight,
+                    color: const Color(0xFF1E3A8A),
+                  ),
+                  title: Text(name, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                  subtitle: Text(type == 'bus' ? 'باص' : type == 'train' ? 'قطار' : 'طيران', style: const TextStyle(fontFamily: 'Cairo')),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      FavoriteCompaniesStore.toggle(key);
+                      (context as Element).markNeedsBuild();
+                    },
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => FavoriteCompanyDetailsScreen(
+                          companyName: name,
+                          companyType: type,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
+
+// 1. كلاس لتخزين الشركات المفضلة
+class FavoriteCompaniesStore {
+  static final Set<String> favorites = {};
+  static void toggle(String companyKey) {
+    if (favorites.contains(companyKey)) {
+      favorites.remove(companyKey);
+    } else {
+      favorites.add(companyKey);
+    }
+  }
+  static bool isFavorite(String companyKey) => favorites.contains(companyKey);
+}
+
+// صفحة تأكيد معلومات الحجز للطيران
+class FlightBookingConfirmationScreen extends StatefulWidget {
+  final String from;
+  final String to;
+  final DateTime date;
+  final String company;
+  final String departureTime;
+  final String arrivalTime;
+  final double price;
+  const FlightBookingConfirmationScreen({super.key, required this.from, required this.to, required this.date, required this.company, required this.departureTime, required this.arrivalTime, required this.price});
+
+  @override
+  State<FlightBookingConfirmationScreen> createState() => _FlightBookingConfirmationScreenState();
+}
+
+class _FlightBookingConfirmationScreenState extends State<FlightBookingConfirmationScreen> {
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  bool isIdPassport = false;
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    idController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return Directionality(
+      textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('تأكيد معلومات الحجز'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('الاسم', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: firstNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'الاسم',
+                          prefixIcon: Icon(Icons.person),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text('اللقب', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: lastNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'اللقب',
+                          prefixIcon: Icon(Icons.person_outline),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isIdPassport = false;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: !isIdPassport ? const Color(0xFF1E3A8A) : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF1E3A8A)),
+                                ),
+                                child: Center(
+                                  child: Text('رقم الهوية', style: TextStyle(color: !isIdPassport ? Colors.white : const Color(0xFF1E3A8A), fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isIdPassport = true;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isIdPassport ? const Color(0xFF1E3A8A) : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF1E3A8A)),
+                                ),
+                                child: Center(
+                                  child: Text('جواز السفر', style: TextStyle(color: isIdPassport ? Colors.white : const Color(0xFF1E3A8A), fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: idController,
+                        decoration: InputDecoration(
+                          labelText: isIdPassport ? 'رقم جواز السفر' : 'رقم الهوية',
+                          prefixIcon: const Icon(Icons.credit_card),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'رقم الهاتف',
+                          prefixIcon: Icon(Icons.phone),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: firstNameController.text.isNotEmpty && lastNameController.text.isNotEmpty && idController.text.isNotEmpty && phoneController.text.isNotEmpty
+                      ? () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => FlightTicketScreen(
+                                from: widget.from,
+                                to: widget.to,
+                                date: widget.date,
+                                company: widget.company,
+                                departureTime: widget.departureTime,
+                                arrivalTime: widget.arrivalTime,
+                                price: widget.price,
+                                customerName: firstNameController.text,
+                                customerLastName: lastNameController.text,
+                                customerId: idController.text,
+                                customerPhone: phoneController.text,
+                                idType: isIdPassport ? 'جواز السفر' : 'رقم الهوية',
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  child: const Text('تأكيد الحجز'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// صفحة التذكرة الأنيقة للطيران
+class FlightTicketScreen extends StatelessWidget {
+  final String from;
+  final String to;
+  final DateTime date;
+  final String company;
+  final String departureTime;
+  final String arrivalTime;
+  final double price;
+  final String customerName;
+  final String customerLastName;
+  final String customerId;
+  final String customerPhone;
+  final String idType;
+  const FlightTicketScreen({super.key, required this.from, required this.to, required this.date, required this.company, required this.departureTime, required this.arrivalTime, required this.price, required this.customerName, required this.customerLastName, required this.customerId, required this.customerPhone, required this.idType});
+
+  @override
+  Widget build(BuildContext context) {
+    final bookingNumber = 'FL${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+    final locale = Localizations.localeOf(context);
+    return Directionality(
+      textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('تذكرة الطيران'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F2027), Color(0xFF2C5364)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2C5364).withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.flight, color: Colors.white, size: 32),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          company,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Cairo'),
+                        ),
+                      ),
+                      Text(
+                        'رقم الحجز: $bookingNumber',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Cairo'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('من', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(from, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Cairo')),
+                            Text(departureTime, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('إلى', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(to, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Cairo')),
+                            Text(arrivalTime, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('الاسم', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('اللقب', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerLastName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(idType, style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerId, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('الهاتف', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text(customerPhone, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('السعر', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Cairo')),
+                            Text('${price.toStringAsFixed(0)} ل.س', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF2C5364),
+                    ),
+                    child: const Text('العودة للرئيسية'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// صفحة تفاصيل الشركة المفضلة
+class FavoriteCompanyDetailsScreen extends StatelessWidget {
+  final String companyName;
+  final String companyType;
+  const FavoriteCompanyDetailsScreen({super.key, required this.companyName, required this.companyType});
+
+  @override
+  Widget build(BuildContext context) {
+    String typeLabel = companyType == 'bus' ? 'شركة باص' : companyType == 'train' ? 'شركة قطار' : 'شركة طيران';
+    IconData icon = companyType == 'bus' ? Icons.directions_bus : companyType == 'train' ? Icons.train : Icons.flight;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(companyName, style: const TextStyle(fontFamily: 'Cairo')),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: const Color(0xFF1E3A8A), size: 48),
+                const SizedBox(height: 16),
+                Text(companyName, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 22)),
+                const SizedBox(height: 8),
+                Text(typeLabel, style: const TextStyle(fontFamily: 'Cairo', fontSize: 16, color: Color(0xFF6B7280))),
+                const SizedBox(height: 24),
+                Text('هذه الشركة من الشركات المفضلة لديك. يمكنك حذفها من المفضلة أو استعراض تفاصيلها هنا.',
+                  style: const TextStyle(fontFamily: 'Cairo', fontSize: 14, color: Color(0xFF374151)), textAlign: TextAlign.center),
+              ],
+            ),
+          ),
         ),
       ),
     );
