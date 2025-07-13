@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-import 'screens/home_page.dart';
 import 'screens/account.dart';
+import 'screens/home_page.dart';
 import 'screens/chatbot.dart';
 import 'screens/my_trips.dart';
 import 'screens/favorite_screen.dart';
-// لم نعد بحاجة لاستيراد favorites.dart هنا لأن المفضلة مدمجة في الملف الشخصي
+
 
 void main() {
   runApp(const ShamApp());
@@ -138,11 +138,11 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      HomePage(onToggleDarkMode: widget.onToggleDarkMode, isDarkMode: widget.isDarkMode),
+      const HomePage(),
       const ChatBotScreen(),
       const MyTripsScreen(),
       const FavoriteScreen(),
-      AccountScreen(onLocaleChange: widget.onLocaleChange),
+      AccountScreen(onLocaleChange: widget.onLocaleChange, onToggleDarkMode: widget.onToggleDarkMode),
     ];
     return Scaffold(
       body: pages[_selectedIndex],
