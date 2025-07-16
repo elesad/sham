@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
 
 class MyTripsScreen extends StatefulWidget {
   const MyTripsScreen({super.key});
@@ -9,48 +11,6 @@ class MyTripsScreen extends StatefulWidget {
 
 class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Trip> _upcomingTrips = [
-    Trip(
-      id: '1',
-      type: TripType.bus,
-      from: 'دمشق',
-      to: 'حلب',
-      date: DateTime.now().add(const Duration(days: 2)),
-      time: '08:00',
-      company: 'شركة الشام للنقل',
-      status: TripStatus.confirmed,
-      price: 1500,
-      seatNumber: 'A12',
-    ),
-    Trip(
-      id: '2',
-      type: TripType.flight,
-      from: 'دمشق',
-      to: 'دبي',
-      date: DateTime.now().add(const Duration(days: 7)),
-      time: '14:30',
-      company: 'طيران الإمارات',
-      status: TripStatus.confirmed,
-      price: 45000,
-      seatNumber: '15B',
-    ),
-  ];
-
-  final List<Trip> _completedTrips = [
-    Trip(
-      id: '3',
-      type: TripType.hotel,
-      from: 'حلب',
-      to: 'فندق الشام',
-      date: DateTime.now().subtract(const Duration(days: 5)),
-      time: '15:00',
-      company: 'فندق الشام الفاخر',
-      status: TripStatus.completed,
-      price: 25000,
-      seatNumber: 'غرفة 305',
-    ),
-  ];
 
   @override
   void initState() {
@@ -66,7 +26,12 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final allTrips = Provider.of<MyTripsProvider>(context).trips;
+    final upcomingTrips = allTrips.where((t) => t.status == TripStatus.confirmed).toList();
+    final completedTrips = allTrips.where((t) => t.status == TripStatus.completed).toList();
+    final cancelledTrips = allTrips.where((t) => t.status == TripStatus.cancelled).toList();
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'رحلاتي',
@@ -75,7 +40,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF127C8A),
+        foregroundColor: Colors.white,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
@@ -94,7 +60,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFF1E3A8A),
+              color: Color(0xFF127C8A),
             ),
             child: Row(
               children: [
@@ -107,7 +73,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search, color: Color(0xFF1E3A8A)),
+                        const Icon(Icons.search, color: Color(0xFF127C8A)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -131,7 +97,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                   ),
                   child: const Icon(
                     Icons.filter_list,
-                    color: Color(0xFF1E3A8A),
+                    color: Color(0xFF127C8A),
                   ),
                 ),
               ],
@@ -141,9 +107,9 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildTripsList(_upcomingTrips),
-                _buildTripsList(_completedTrips),
-                _buildTripsList([]), // رحلات ملغية
+                _buildTripsList(upcomingTrips),
+                _buildTripsList(completedTrips),
+                _buildTripsList(cancelledTrips),
               ],
             ),
           ),
@@ -268,6 +234,15 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                           fontFamily: 'Cairo',
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'رقم التذكرة: ${trip.ticketNumber}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -312,7 +287,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3A8A),
+                        color: Color(0xFF127C8A),
                         fontFamily: 'Cairo',
                       ),
                     ),
@@ -323,7 +298,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                           icon: const Icon(Icons.info_outline, size: 18),
                           label: const Text('التفاصيل'),
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF1E3A8A),
+                            foregroundColor: const Color(0xFF127C8A),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -332,12 +307,28 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
                           icon: const Icon(Icons.download, size: 18),
                           label: const Text('تحميل التذكرة'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E3A8A),
+                            backgroundColor: const Color(0xFF127C8A),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _removeTrip(trip);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('تمت إزالة الرحلة إلى ${trip.to}'),
+                                backgroundColor: const Color(0xFF127C8A),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'حذف الرحلة',
                         ),
                       ],
                     ),
@@ -376,17 +367,21 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
         return Icons.flight;
       case TripType.hotel:
         return Icons.hotel;
+      case TripType.train:
+        return Icons.train;
     }
   }
 
   List<Color> _getTripGradient(TripType type) {
     switch (type) {
       case TripType.bus:
-        return [const Color(0xFF1E3A8A), const Color(0xFF3B82F6)];
+        return [const Color(0xFF127C8A), const Color(0xFF0F5F6B)];
       case TripType.flight:
-        return [const Color(0xFF059669), const Color(0xFF10B981)];
+        return [const Color(0xFF10B981), const Color(0xFF059669)];
       case TripType.hotel:
-        return [const Color(0xFFDC2626), const Color(0xFFEF4444)];
+        return [const Color(0xFFF59E0B), const Color(0xFFD97706)];
+      case TripType.train:
+        return [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)];
     }
   }
 
@@ -435,24 +430,25 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('تفاصيل الرحلة'),
+        title: const Text('تفاصيل الرحلة', style: TextStyle(fontFamily: 'Cairo')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('من: ${trip.from}'),
-            Text('إلى: ${trip.to}'),
-            Text('التاريخ: ${_formatDate(trip.date)}'),
-            Text('الوقت: ${trip.time}'),
-            Text('الشركة: ${trip.company}'),
-            Text('رقم المقعد: ${trip.seatNumber}'),
-            Text('السعر: ${trip.price.toStringAsFixed(0)} ل.س'),
+            Text('من: ${trip.from}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('إلى: ${trip.to}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('التاريخ: ${_formatDate(trip.date)}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('الوقت: ${trip.time}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('الشركة: ${trip.company}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('رقم المقعد: ${trip.seatNumber}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('رقم التذكرة: ${trip.ticketNumber}', style: const TextStyle(fontFamily: 'Cairo')),
+            Text('السعر: ${trip.price.toStringAsFixed(0)} ل.س', style: const TextStyle(fontFamily: 'Cairo')),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق'),
+            child: const Text('إغلاق', style: TextStyle(fontFamily: 'Cairo')),
           ),
         ],
       ),
@@ -463,13 +459,17 @@ class _MyTripsScreenState extends State<MyTripsScreen> with TickerProviderStateM
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('جاري تحميل تذكرة الرحلة إلى ${trip.to}...'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF127C8A),
       ),
     );
   }
+
+  void _removeTrip(Trip trip) {
+    Provider.of<MyTripsProvider>(context, listen: false).removeTrip(trip);
+  }
 }
 
-enum TripType { bus, flight, hotel }
+enum TripType { bus, flight, hotel, train }
 enum TripStatus { confirmed, completed, cancelled }
 
 class Trip {
@@ -483,6 +483,7 @@ class Trip {
   final TripStatus status;
   final double price;
   final String seatNumber;
+  final String ticketNumber;
 
   Trip({
     required this.id,
@@ -495,5 +496,6 @@ class Trip {
     required this.status,
     required this.price,
     required this.seatNumber,
+    required this.ticketNumber,
   });
 } 

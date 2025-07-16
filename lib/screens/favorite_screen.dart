@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -9,59 +11,6 @@ class FavoriteScreen extends StatefulWidget {
 
 class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<FavoriteCompany> _favoriteCompanies = [
-    FavoriteCompany(
-      id: '1',
-      name: 'شركة الشام للنقل',
-      logo: '🚌',
-      type: CompanyType.bus,
-      rating: 4.8,
-      routes: 15,
-      isFavorite: true,
-    ),
-    FavoriteCompany(
-      id: '2',
-      name: 'طيران الإمارات',
-      logo: '✈️',
-      type: CompanyType.flight,
-      rating: 4.9,
-      routes: 8,
-      isFavorite: true,
-    ),
-    FavoriteCompany(
-      id: '3',
-      name: 'فندق الشام الفاخر',
-      logo: '🏨',
-      type: CompanyType.hotel,
-      rating: 4.7,
-      routes: 3,
-      isFavorite: true,
-    ),
-  ];
-
-  final List<FavoriteRoute> _favoriteRoutes = [
-    FavoriteRoute(
-      id: '1',
-      from: 'دمشق',
-      to: 'حلب',
-      type: RouteType.bus,
-      price: 1500,
-      duration: '3 ساعات',
-      frequency: 'كل ساعة',
-      isFavorite: true,
-    ),
-    FavoriteRoute(
-      id: '2',
-      from: 'دمشق',
-      to: 'دبي',
-      type: RouteType.flight,
-      price: 45000,
-      duration: '2.5 ساعة',
-      frequency: 'يومياً',
-      isFavorite: true,
-    ),
-  ];
 
   @override
   void initState() {
@@ -78,6 +27,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'المفضلة',
@@ -86,7 +36,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF127C8A),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -110,7 +61,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFF1E3A8A),
+              color: Color(0xFF127C8A),
             ),
             child: Row(
               children: [
@@ -123,7 +74,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search, color: Color(0xFF1E3A8A)),
+                        const Icon(Icons.search, color: Color(0xFF127C8A)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -147,7 +98,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                   ),
                   child: const Icon(
                     Icons.filter_list,
-                    color: Color(0xFF1E3A8A),
+                    color: Color(0xFF127C8A),
                   ),
                 ),
               ],
@@ -168,37 +119,21 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
   }
 
   Widget _buildCompaniesList() {
-    if (_favoriteCompanies.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.favorite_border,
-        title: 'لا توجد شركات مفضلة',
-        subtitle: 'أضف الشركات التي تفضلها لتسهيل الحجز',
-      );
-    }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _favoriteCompanies.length,
+      itemCount: Provider.of<FavoriteProvider>(context).favoriteCompanies.length,
       itemBuilder: (context, index) {
-        return _buildCompanyCard(_favoriteCompanies[index]);
+        return _buildCompanyCard(Provider.of<FavoriteProvider>(context).favoriteCompanies[index]);
       },
     );
   }
 
   Widget _buildRoutesList() {
-    if (_favoriteRoutes.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.route,
-        title: 'لا توجد طرق مفضلة',
-        subtitle: 'أضف الطرق التي تسافر عليها بكثرة',
-      );
-    }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _favoriteRoutes.length,
+      itemCount: Provider.of<FavoriteProvider>(context).favoriteRoutes.length,
       itemBuilder: (context, index) {
-        return _buildRouteCard(_favoriteRoutes[index]);
+        return _buildRouteCard(Provider.of<FavoriteProvider>(context).favoriteRoutes[index]);
       },
     );
   }
@@ -250,57 +185,33 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Cairo',
+                      color: Color(0xFF1F2937),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(
-                        _getCompanyIcon(company.type),
+                        Icons.star,
                         size: 16,
-                        color: Colors.grey[600],
+                        color: Colors.amber[600],
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        _getCompanyTypeText(company.type),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                          fontFamily: 'Cairo',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Row(
-                        children: List.generate(5, (index) {
-                          return Icon(
-                            index < company.rating.floor()
-                                ? Icons.star
-                                : Icons.star_border,
-                            size: 16,
-                            color: Colors.amber,
-                          );
-                        }),
-                      ),
-                      const SizedBox(width: 8),
                       Text(
                         company.rating.toString(),
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
+                          fontFamily: 'Cairo',
+                          color: Color(0xFF6B7280),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       Text(
                         '${company.routes} مسار',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
                           fontFamily: 'Cairo',
+                          color: Color(0xFF6B7280),
                         ),
                       ),
                     ],
@@ -311,22 +222,31 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
             Column(
               children: [
                 IconButton(
-                  onPressed: () => _toggleCompanyFavorite(company),
-                  icon: Icon(
-                    company.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: company.isFavorite ? Colors.red : Colors.grey,
+                  onPressed: () {
+                    Provider.of<FavoriteProvider>(context, listen: false).removeCompany(company);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('تمت إزالة ${company.name} من المفضلة'),
+                        backgroundColor: const Color(0xFF127C8A),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.favorite,
+                    color: Colors.red,
+                    size: 28,
                   ),
                 ),
-                ElevatedButton(
+                TextButton(
                   onPressed: () => _bookWithCompany(company),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A8A),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  child: const Text(
+                    'احجز الآن',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Color(0xFF127C8A),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: const Text('حجز'),
                 ),
               ],
             ),
@@ -353,26 +273,23 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: _getRouteGradient(route.type),
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                    color: _getRouteColor(route.type).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     _getRouteIcon(route.type),
-                    color: Colors.white,
-                    size: 24,
+                    color: _getRouteColor(route.type),
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,18 +297,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                       Text(
                         '${route.from} → ${route.to}',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Cairo',
+                          color: Color(0xFF1F2937),
                         ),
                       ),
-                      const SizedBox(height: 4),
                       Text(
                         '${route.duration} • ${route.frequency}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                        style: const TextStyle(
+                          fontSize: 12,
                           fontFamily: 'Cairo',
+                          color: Color(0xFF6B7280),
                         ),
                       ),
                     ],
@@ -403,10 +320,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                     Text(
                       '${route.price.toStringAsFixed(0)} ل.س',
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3A8A),
                         fontFamily: 'Cairo',
+                        color: Color(0xFF127C8A),
                       ),
                     ),
                     IconButton(
@@ -414,35 +331,46 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
                       icon: Icon(
                         route.isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: route.isFavorite ? Colors.red : Colors.grey,
+                        size: 20,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _viewRouteDetails(route),
-                    icon: const Icon(Icons.info_outline),
-                    label: const Text('التفاصيل'),
+                  child: OutlinedButton(
+                    onPressed: () => _searchRoute(route),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF1E3A8A),
-                      side: const BorderSide(color: Color(0xFF1E3A8A)),
+                      foregroundColor: const Color(0xFF127C8A),
+                      side: const BorderSide(color: Color(0xFF127C8A)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'البحث عن رحلات',
+                      style: TextStyle(fontFamily: 'Cairo'),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: () => _bookRoute(route),
-                    icon: const Icon(Icons.confirmation_number),
-                    label: const Text('حجز'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E3A8A),
+                      backgroundColor: const Color(0xFF127C8A),
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'احجز الآن',
+                      style: TextStyle(fontFamily: 'Cairo'),
                     ),
                   ),
                 ),
@@ -478,57 +406,49 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
           const SizedBox(height: 16),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
-              color: Colors.grey[600],
+              color: Color(0xFF6B7280),
               fontFamily: 'Cairo',
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: Color(0xFF9CA3AF),
               fontFamily: 'Cairo',
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  IconData _getCompanyIcon(CompanyType type) {
-    switch (type) {
-      case CompanyType.bus:
-        return Icons.directions_bus;
-      case CompanyType.flight:
-        return Icons.flight;
-      case CompanyType.hotel:
-        return Icons.hotel;
-    }
-  }
-
-  String _getCompanyTypeText(CompanyType type) {
-    switch (type) {
-      case CompanyType.bus:
-        return 'شركة نقل';
-      case CompanyType.flight:
-        return 'شركة طيران';
-      case CompanyType.hotel:
-        return 'فندق';
-    }
-  }
-
   List<Color> _getCompanyGradient(CompanyType type) {
     switch (type) {
       case CompanyType.bus:
-        return [const Color(0xFF1E3A8A), const Color(0xFF3B82F6)];
+        return [const Color(0xFF127C8A), const Color(0xFF0F5F6B)];
       case CompanyType.flight:
-        return [const Color(0xFF059669), const Color(0xFF10B981)];
+        return [const Color(0xFF10B981), const Color(0xFF059669)];
       case CompanyType.hotel:
-        return [const Color(0xFFDC2626), const Color(0xFFEF4444)];
+        return [const Color(0xFFF59E0B), const Color(0xFFD97706)];
+      case CompanyType.train:
+        return [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)];
+    }
+  }
+
+  Color _getRouteColor(RouteType type) {
+    switch (type) {
+      case RouteType.bus:
+        return const Color(0xFF127C8A);
+      case RouteType.flight:
+        return const Color(0xFF10B981);
+      case RouteType.hotel:
+        return const Color(0xFFF59E0B);
+      case RouteType.train:
+        return const Color(0xFF8B5CF6);
     }
   }
 
@@ -538,35 +458,57 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
         return Icons.directions_bus;
       case RouteType.flight:
         return Icons.flight;
-    }
-  }
-
-  List<Color> _getRouteGradient(RouteType type) {
-    switch (type) {
-      case RouteType.bus:
-        return [const Color(0xFF1E3A8A), const Color(0xFF3B82F6)];
-      case RouteType.flight:
-        return [const Color(0xFF059669), const Color(0xFF10B981)];
+      case RouteType.hotel:
+        return Icons.hotel;
+      case RouteType.train:
+        return Icons.train;
     }
   }
 
   void _toggleCompanyFavorite(FavoriteCompany company) {
-    setState(() {
-      company.isFavorite = !company.isFavorite;
-    });
+    Provider.of<FavoriteProvider>(context, listen: false).toggleCompanyFavorite(company);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          company.isFavorite 
+            ? 'تمت إضافة ${company.name} إلى المفضلة'
+            : 'تمت إزالة ${company.name} من المفضلة'
+        ),
+        backgroundColor: const Color(0xFF127C8A),
+      ),
+    );
   }
 
   void _toggleRouteFavorite(FavoriteRoute route) {
-    setState(() {
-      route.isFavorite = !route.isFavorite;
-    });
+    Provider.of<FavoriteProvider>(context, listen: false).toggleRouteFavorite(route);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          route.isFavorite 
+            ? 'تمت إضافة المسار إلى المفضلة'
+            : 'تمت إزالة المسار من المفضلة'
+        ),
+        backgroundColor: const Color(0xFF127C8A),
+      ),
+    );
   }
 
   void _bookWithCompany(FavoriteCompany company) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('جاري فتح صفحة حجز ${company.name}...'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        content: Text('جاري الانتقال إلى حجز ${company.name}...'),
+        backgroundColor: const Color(0xFF127C8A),
+      ),
+    );
+  }
+
+  void _searchRoute(FavoriteRoute route) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('جاري البحث عن رحلات من ${route.from} إلى ${route.to}...'),
+        backgroundColor: const Color(0xFF127C8A),
       ),
     );
   }
@@ -574,34 +516,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
   void _bookRoute(FavoriteRoute route) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('جاري حجز رحلة ${route.from} إلى ${route.to}...'),
-        backgroundColor: const Color(0xFF1E3A8A),
-      ),
-    );
-  }
-
-  void _viewRouteDetails(FavoriteRoute route) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('تفاصيل المسار'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('من: ${route.from}'),
-            Text('إلى: ${route.to}'),
-            Text('المدة: ${route.duration}'),
-            Text('التكرار: ${route.frequency}'),
-            Text('السعر: ${route.price.toStringAsFixed(0)} ل.س'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق'),
-          ),
-        ],
+        content: Text('جاري الانتقال إلى حجز الرحلة من ${route.from} إلى ${route.to}...'),
+        backgroundColor: const Color(0xFF127C8A),
       ),
     );
   }
@@ -624,27 +540,27 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.sort_by_alpha),
-              title: const Text('ترتيب أبجدي'),
+              leading: const Icon(Icons.star),
+              title: const Text('حسب التقييم', style: TextStyle(fontFamily: 'Cairo')),
               onTap: () {
                 Navigator.pop(context);
-                // تطبيق الترتيب الأبجدي
+                Provider.of<FavoriteProvider>(context, listen: false).sortByRating();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('ترتيب حسب التقييم'),
+              leading: const Icon(Icons.sort_by_alpha),
+              title: const Text('حسب الاسم', style: TextStyle(fontFamily: 'Cairo')),
               onTap: () {
                 Navigator.pop(context);
-                // تطبيق الترتيب حسب التقييم
+                Provider.of<FavoriteProvider>(context, listen: false).sortByName();
               },
             ),
             ListTile(
               leading: const Icon(Icons.attach_money),
-              title: const Text('ترتيب حسب السعر'),
+              title: const Text('حسب السعر', style: TextStyle(fontFamily: 'Cairo')),
               onTap: () {
                 Navigator.pop(context);
-                // تطبيق الترتيب حسب السعر
+                Provider.of<FavoriteProvider>(context, listen: false).sortByPrice();
               },
             ),
           ],
@@ -654,8 +570,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> with TickerProviderStat
   }
 }
 
-enum CompanyType { bus, flight, hotel }
-enum RouteType { bus, flight }
+enum CompanyType { bus, flight, hotel, train }
+enum RouteType { bus, flight, hotel, train }
 
 class FavoriteCompany {
   final String id;

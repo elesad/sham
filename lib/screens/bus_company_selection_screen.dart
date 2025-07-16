@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../data/bus_data.dart';
 import 'bus_seat_selection.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
+import '../screens/favorite_screen.dart';
 
-class BusCompanySelectionScreen extends StatelessWidget {
+class BusCompanySelectionScreen extends StatefulWidget {
   final String fromProvince;
   final String toProvince;
   final DateTime date;
@@ -15,7 +18,47 @@ class BusCompanySelectionScreen extends StatelessWidget {
   });
 
   @override
+  State<BusCompanySelectionScreen> createState() => _BusCompanySelectionScreenState();
+}
+
+class _BusCompanySelectionScreenState extends State<BusCompanySelectionScreen> {
+  // إزالة منطق المفضلة المحلي
+  // final Set<String> _favoriteCompanies = <String>{};
+
+  // bool _isFavorite(String companyId) {
+  //   return _favoriteCompanies.contains(companyId);
+  // }
+
+  // void _toggleFavorite(dynamic company) {
+  //   setState(() {
+  //     if (_favoriteCompanies.contains(company.id)) {
+  //       _favoriteCompanies.remove(company.id);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('تمت إزالة ${company.name} من المفضلة'),
+  //           backgroundColor: const Color(0xFF127C8A),
+  //         ),
+  //       );
+  //     } else {
+  //       _favoriteCompanies.add(company.id);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('تمت إضافة ${company.name} إلى المفضلة'),
+  //           backgroundColor: const Color(0xFF127C8A),
+  //         ),
+  //       );
+  //     }
+  //   });
+  // }
+
+  bool _isFavorite(String companyId, List<FavoriteCompany> favorites) {
+    return favorites.any((c) => c.id == companyId);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final favoriteProvider = Provider.of<FavoriteProvider>(context);
+    final favoriteCompanies = favoriteProvider.favoriteCompanies;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -53,7 +96,7 @@ class BusCompanySelectionScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'من: $fromProvince',
+                            'من: ${widget.fromProvince}',
                             style: const TextStyle(
                               fontFamily: 'Cairo',
                               color: Colors.white,
@@ -63,7 +106,7 @@ class BusCompanySelectionScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'إلى: $toProvince',
+                            'إلى: ${widget.toProvince}',
                             style: const TextStyle(
                               fontFamily: 'Cairo',
                               color: Colors.white,
@@ -81,7 +124,7 @@ class BusCompanySelectionScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '${date.day}/${date.month}/${date.year}',
+                        '${widget.date.day}/${widget.date.month}/${widget.date.year}',
                         style: const TextStyle(
                           fontFamily: 'Cairo',
                           color: Colors.white,
@@ -103,6 +146,7 @@ class BusCompanySelectionScreen extends StatelessWidget {
               itemCount: BusData.companies.length,
               itemBuilder: (context, index) {
                 final company = BusData.companies[index];
+                final isFavorite = _isFavorite(company.id, favoriteCompanies);
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
@@ -123,9 +167,9 @@ class BusCompanySelectionScreen extends StatelessWidget {
                       onTap: () {
                         // إنشاء رحلة تجريبية
                         final trip = BusData.createSampleTrip(
-                          fromProvince: fromProvince,
-                          toProvince: toProvince,
-                          date: date,
+                          fromProvince: widget.fromProvince,
+                          toProvince: widget.toProvince,
+                          date: widget.date,
                           companyId: company.id,
                         );
                         
@@ -215,18 +259,50 @@ class BusCompanySelectionScreen extends StatelessWidget {
                               ),
                             ),
                             
-                            // سعر الرحلة
+                            // سعر الرحلة والمفضلة
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                const Text(
-                                  '2500 ل.س',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF127C8A),
-                                  ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        if (!isFavorite) {
+                                          final favCompany = FavoriteCompany(
+                                            id: company.id,
+                                            name: company.name,
+                                            logo: company.logo,
+                                            type: CompanyType.bus,
+                                            rating: company.rating,
+                                            routes: company.reviewCount,
+                                            isFavorite: true,
+                                          );
+                                          favoriteProvider.toggleCompanyFavorite(favCompany);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('تمت إضافة ${company.name} إلى المفضلة'),
+                                              backgroundColor: const Color(0xFF127C8A),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      icon: Icon(
+                                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                                        color: isFavorite ? Colors.red : Colors.grey,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const Text(
+                                      '2500 ل.س',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF127C8A),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Container(

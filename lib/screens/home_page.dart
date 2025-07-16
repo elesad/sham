@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/bus_data.dart';
 import '../models/bus_models.dart';
 import 'bus_company_selection_screen.dart';
-import 'flight_company_selection_screen.dart';
+import 'flight_search_screen.dart';
 import 'hotel_selection_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -150,27 +150,11 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else if (selectedTransport == 'plane') {
-      // التحقق من أن المدن متوفرة للطائرات
-      final flightCities = ['حلب', 'دمشق', 'الحسكة'];
-      if (!flightCities.contains(fromLocation) || !flightCities.contains(toLocation)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('رحلات الطائرات متوفرة فقط بين: حلب، دمشق، الحسكة'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      
-      // الانتقال إلى صفحة شركات الطائرات
+      // الانتقال إلى صفحة اختيار المدن والتاريخ للطائرات
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => FlightCompanySelectionScreen(
-            fromCity: fromLocation,
-            toCity: toLocation,
-            date: selectedDateTime ?? DateTime.now(),
-          ),
+          builder: (context) => const FlightSearchScreen(),
         ),
       );
     } else if (selectedTransport == 'train') {
@@ -216,16 +200,16 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'مرحباً بك',
+                          'شام',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[700],
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF127C8A),
                           ),
                         ),
                         Text(
-                          'ابحث عن رحلتك المفضلة',
+                          'حجز تذاكر السفر',
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 12,
@@ -271,17 +255,6 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // عنوان الصفحة
-                    Text(
-                      'ابحث عن رحلتك',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF127C8A),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
                     const SizedBox(height: 24),
                     
                     // خيارات النقل
@@ -301,15 +274,6 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'اختر وسيلة النقل',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -372,15 +336,6 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'من أين إلى أين؟',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
                           const SizedBox(height: 16),
                           GestureDetector(
                             onTap: () => _showProvincePicker(context, true),

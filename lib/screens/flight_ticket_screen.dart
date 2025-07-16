@@ -9,6 +9,7 @@ class FlightTicketScreen extends StatelessWidget {
   final String passengerPhone;
   final String passengerId;
   final String nationality;
+  final DateTime birthDate;
   final VisaInfo? visaInfo;
 
   const FlightTicketScreen({
@@ -20,6 +21,7 @@ class FlightTicketScreen extends StatelessWidget {
     required this.passengerPhone,
     required this.passengerId,
     required this.nationality,
+    required this.birthDate,
     this.visaInfo,
   });
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../data/flight_data.dart';
 import 'flight_booking_screen.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
+import '../screens/favorite_screen.dart'; // <-- Add this import
 
-class FlightCompanySelectionScreen extends StatelessWidget {
+class FlightCompanySelectionScreen extends StatefulWidget {
   final String fromCity;
   final String toCity;
   final DateTime date;
@@ -15,13 +18,38 @@ class FlightCompanySelectionScreen extends StatelessWidget {
   });
 
   @override
+  State<FlightCompanySelectionScreen> createState() => _FlightCompanySelectionScreenState();
+}
+
+class _FlightCompanySelectionScreenState extends State<FlightCompanySelectionScreen> {
+  // Helper to check if a company is favorite
+  bool _isFavorite(String companyId, List<FavoriteCompany> favorites) {
+    return favorites.any((c) => c.id == companyId);
+  }
+
+  FavoriteCompany _toFavoriteCompany(dynamic company) {
+    // FlightCompany to FavoriteCompany
+    return FavoriteCompany(
+      id: company.id,
+      name: company.name,
+      logo: company.logo,
+      type: CompanyType.flight,
+      rating: company.rating,
+      routes: company.reviewCount, // or another field if needed
+      isFavorite: false, // This field is not used in provider logic
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final flights = FlightData.getFlights(
-      fromCity: fromCity,
-      toCity: toCity,
-      date: date,
+      fromCity: widget.fromCity,
+      toCity: widget.toCity,
+      date: widget.date,
     );
-
+    final favoriteProvider = Provider.of<FavoriteProvider>(context);
+    final favoriteCompanies = favoriteProvider.favoriteCompanies;
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -59,7 +87,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'من: $fromCity',
+                            'من: ${widget.fromCity}',
                             style: const TextStyle(
                               fontFamily: 'Cairo',
                               color: Colors.white,
@@ -69,7 +97,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'إلى: $toCity',
+                            'إلى: ${widget.toCity}',
                             style: const TextStyle(
                               fontFamily: 'Cairo',
                               color: Colors.white,
@@ -87,7 +115,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '${date.day}/${date.month}/${date.year}',
+                        '${widget.date.day}/${widget.date.month}/${widget.date.year}',
                         style: const TextStyle(
                           fontFamily: 'Cairo',
                           color: Colors.white,
@@ -112,6 +140,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                 final company = FlightData.companies.firstWhere(
                   (c) => c.id == flight.companyId,
                 );
+                final isFavorite = _isFavorite(company.id, favoriteCompanies);
                 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -208,6 +237,25 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
+                                        const SizedBox(width: 8),
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (!isFavorite) {
+                                              favoriteProvider.toggleCompanyFavorite(_toFavoriteCompany(company));
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('تمت إضافة ${company.name} إلى المفضلة'),
+                                                  backgroundColor: const Color(0xFF127C8A),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Icon(
+                                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                                            size: 20,
+                                            color: isFavorite ? Colors.red : Colors.grey[400],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     Text(
@@ -240,7 +288,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        fromCity,
+                                        widget.fromCity,
                                         style: const TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 12,
@@ -324,7 +372,7 @@ class FlightCompanySelectionScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        toCity,
+                                        widget.toCity,
                                         style: const TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 12,

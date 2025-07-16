@@ -17,16 +17,22 @@ class HotelBookingScreen extends StatefulWidget {
 
 class _HotelBookingScreenState extends State<HotelBookingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _idController = TextEditingController();
   
+  String _selectedCountryCode = '+963';
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
   int _numberOfGuests = 1;
   int _numberOfRooms = 1;
   String _paymentMethod = 'visa';
   bool _isLoading = false;
+  bool _showCodeVerification = false;
+  final _codeController = TextEditingController();
+  String _sentCode = '';
   
   // معلومات الفيزا
   final _cardNumberController = TextEditingController();
@@ -34,15 +40,51 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
   final _expiryController = TextEditingController();
   final _cvvController = TextEditingController();
 
+  final List<Map<String, String>> _countryCodes = [
+    {'code': '+963', 'country': 'سوريا'},
+    {'code': '+961', 'country': 'لبنان'},
+    {'code': '+962', 'country': 'الأردن'},
+    {'code': '+20', 'country': 'مصر'},
+    {'code': '+966', 'country': 'السعودية'},
+    {'code': '+971', 'country': 'الإمارات'},
+    {'code': '+965', 'country': 'الكويت'},
+    {'code': '+974', 'country': 'قطر'},
+    {'code': '+973', 'country': 'البحرين'},
+    {'code': '+968', 'country': 'عمان'},
+    {'code': '+964', 'country': 'العراق'},
+    {'code': '+98', 'country': 'إيران'},
+    {'code': '+90', 'country': 'تركيا'},
+    {'code': '+49', 'country': 'ألمانيا'},
+    {'code': '+33', 'country': 'فرنسا'},
+    {'code': '+44', 'country': 'بريطانيا'},
+    {'code': '+39', 'country': 'إيطاليا'},
+    {'code': '+34', 'country': 'إسبانيا'},
+    {'code': '+7', 'country': 'روسيا'},
+    {'code': '+86', 'country': 'الصين'},
+    {'code': '+81', 'country': 'اليابان'},
+    {'code': '+82', 'country': 'كوريا الجنوبية'},
+    {'code': '+91', 'country': 'الهند'},
+    {'code': '+92', 'country': 'باكستان'},
+    {'code': '+93', 'country': 'أفغانستان'},
+    {'code': '+1', 'country': 'الولايات المتحدة'},
+    {'code': '+1', 'country': 'كندا'},
+    {'code': '+61', 'country': 'أستراليا'},
+    {'code': '+55', 'country': 'البرازيل'},
+    {'code': '+54', 'country': 'الأرجنتين'},
+  ];
+
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _idController.dispose();
     _cardNumberController.dispose();
     _cardHolderController.dispose();
     _expiryController.dispose();
     _cvvController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -67,6 +109,60 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
     }
   }
 
+  void _sendCode() {
+    setState(() {
+      _sentCode = '1234';
+      _showCodeVerification = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('تم إرسال كود التحقق إلى رقم الهاتف'),
+        backgroundColor: Color(0xFF127C8A),
+      ),
+    );
+  }
+
+  void _verifyCodeAndBook() {
+    if (_codeController.text == _sentCode) {
+      final nights = _checkOutDate!.difference(_checkInDate!).inDays;
+      final totalPrice = nights * widget.hotel.pricePerNight * _numberOfRooms;
+      VisaInfo? visaInfo;
+      if (_paymentMethod == 'visa') {
+        visaInfo = VisaInfo(
+          cardNumber: _cardNumberController.text,
+          cardHolderName: _cardHolderController.text,
+          expiryDate: _expiryController.text,
+          cvv: _cvvController.text,
+        );
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HotelTicketScreen(
+            hotel: widget.hotel,
+            guestName: '${_firstNameController.text} ${_lastNameController.text}',
+            guestEmail: _emailController.text,
+            guestPhone: '$_selectedCountryCode${_phoneController.text}',
+            checkInDate: _checkInDate!,
+            checkOutDate: _checkOutDate!,
+            numberOfGuests: _numberOfGuests,
+            numberOfRooms: _numberOfRooms,
+            totalPrice: totalPrice,
+            paymentMethod: _paymentMethod,
+            visaInfo: visaInfo,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('الكود غير صحيح'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void _confirmBooking() async {
     if (!_formKey.currentState!.validate()) return;
     if (_checkInDate == null || _checkOutDate == null) {
@@ -86,46 +182,59 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
 
     if (mounted) {
       setState(() => _isLoading = false);
-      
-      // حساب عدد الليالي والسعر الإجمالي
-      final nights = _checkOutDate!.difference(_checkInDate!).inDays;
-      final totalPrice = nights * widget.hotel.pricePerNight * _numberOfRooms;
-      
-      // إنشاء معلومات الفيزا إذا تم اختيار الدفع بالفيزا
-      VisaInfo? visaInfo;
-      if (_paymentMethod == 'visa') {
-        visaInfo = VisaInfo(
-          cardNumber: _cardNumberController.text,
-          cardHolderName: _cardHolderController.text,
-          expiryDate: _expiryController.text,
-          cvv: _cvvController.text,
-        );
-      }
-
-      // الانتقال إلى صفحة التذكرة
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HotelTicketScreen(
-            hotel: widget.hotel,
-            guestName: _nameController.text,
-            guestEmail: _emailController.text,
-            guestPhone: _phoneController.text,
-            checkInDate: _checkInDate!,
-            checkOutDate: _checkOutDate!,
-            numberOfGuests: _numberOfGuests,
-            numberOfRooms: _numberOfRooms,
-            totalPrice: totalPrice,
-            paymentMethod: _paymentMethod,
-            visaInfo: visaInfo,
-          ),
-        ),
-      );
+      _sendCode();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showCodeVerification) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: const Text('تأكيد رقم الهاتف', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFF127C8A),
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.sms, size: 60, color: Color(0xFF127C8A)),
+                const SizedBox(height: 24),
+                const Text('أدخل الكود المرسل إلى رقم الهاتف', style: TextStyle(fontFamily: 'Cairo', fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _codeController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'الكود',
+                    border: OutlineInputBorder(),
+                  ),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontFamily: 'Cairo', fontSize: 20, letterSpacing: 8),
+                  maxLength: 4,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _verifyCodeAndBook,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF127C8A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('تأكيد', style: TextStyle(fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final nights = _checkInDate != null && _checkOutDate != null 
         ? _checkOutDate!.difference(_checkInDate!).inDays 
         : 0;
@@ -286,50 +395,121 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // الاسم الأول
                     TextFormField(
-                      controller: _nameController,
+                      controller: _firstNameController,
                       decoration: const InputDecoration(
-                        labelText: 'الاسم واللقب',
-                        prefixIcon: Icon(Icons.person, color: Color(0xFF127C8A)),
+                        labelText: 'الاسم الأول',
+                        prefixIcon: Icon(Icons.person),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال الاسم';
+                          return 'يرجى إدخال الاسم الأول';
                         }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    
+                    // اللقب
+                    TextFormField(
+                      controller: _lastNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'اللقب',
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'يرجى إدخال اللقب';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // البريد الإلكتروني
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'البريد الإلكتروني',
-                        prefixIcon: Icon(Icons.email, color: Color(0xFF127C8A)),
+                        prefixIcon: Icon(Icons.email),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'يرجى إدخال البريد الإلكتروني';
                         }
-                        if (!value.contains('@')) {
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                           return 'يرجى إدخال بريد إلكتروني صحيح';
                         }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    
+                    // رقم الهاتف مع مفتاح الدولة
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCountryCode,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                            ),
+                            items: _countryCodes.map((country) {
+                              return DropdownMenuItem(
+                                value: country['code'],
+                                child: Text(
+                                  '${country['code']} ${country['country']}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCountryCode = value!;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: 'رقم الهاتف',
+                              prefixIcon: Icon(Icons.phone),
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'يرجى إدخال رقم الهاتف';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // رقم الهوية
                     TextFormField(
-                      controller: _phoneController,
+                      controller: _idController,
                       decoration: const InputDecoration(
-                        labelText: 'رقم الهاتف',
-                        prefixIcon: Icon(Icons.phone, color: Color(0xFF127C8A)),
+                        labelText: 'رقم الهوية',
+                        prefixIcon: Icon(Icons.badge),
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType: TextInputType.phone,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال رقم الهاتف';
+                          return 'يرجى إدخال رقم الهوية';
                         }
                         return null;
                       },

@@ -18,14 +18,6 @@ class FlightData {
       rating: 4.3,
       reviewCount: 850,
     ),
-    FlightCompany(
-      id: 'company_3',
-      name: 'طيران الشام',
-      logo: '✈️',
-      description: 'خدمة طيران محلية متميزة',
-      rating: 4.6,
-      reviewCount: 680,
-    ),
   ];
 
   static final List<String> flightCities = ['حلب', 'دمشق', 'الحسكة'];
