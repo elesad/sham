@@ -1,338 +1,187 @@
 import 'package:flutter/material.dart';
-import '../data/bus_data.dart';
 import 'bus_seat_selection.dart';
-import 'package:provider/provider.dart';
-import '../models/app_state.dart';
-import '../screens/favorite_screen.dart';
+
+class BusCompany {
+  final String id;
+  final String name;
+  final String logo;
+  final double rating;
+  final int price;
+  final String time;
+
+  BusCompany({required this.id, required this.name, required this.logo, required this.rating, required this.price, required this.time});
+}
+
+final List<BusCompany> busCompanies = [
+  BusCompany(id: '1', name: 'النور', logo: '🚌', rating: 4.7, price: 25000, time: '08:00'),
+  BusCompany(id: '2', name: 'البركة', logo: '🚍', rating: 4.5, price: 26000, time: '09:30'),
+  BusCompany(id: '3', name: 'الهدى', logo: '🚌', rating: 4.3, price: 24000, time: '11:00'),
+  BusCompany(id: '4', name: 'الشام', logo: '🚍', rating: 4.6, price: 25500, time: '12:30'),
+  BusCompany(id: '5', name: 'الفرات', logo: '🚌', rating: 4.2, price: 24500, time: '14:00'),
+  BusCompany(id: '6', name: 'الشرق', logo: '🚍', rating: 4.4, price: 25000, time: '15:30'),
+  BusCompany(id: '7', name: 'الكوثر', logo: '🚌', rating: 4.1, price: 23500, time: '17:00'),
+  BusCompany(id: '8', name: 'الريان', logo: '🚍', rating: 4.0, price: 23000, time: '18:30'),
+];
 
 class BusCompanySelectionScreen extends StatefulWidget {
-  final String fromProvince;
-  final String toProvince;
+  final String fromCity;
+  final String toCity;
   final DateTime date;
 
-  const BusCompanySelectionScreen({
-    super.key,
-    required this.fromProvince,
-    required this.toProvince,
-    required this.date,
-  });
+  const BusCompanySelectionScreen({super.key, required this.fromCity, required this.toCity, required this.date});
 
   @override
   State<BusCompanySelectionScreen> createState() => _BusCompanySelectionScreenState();
 }
 
 class _BusCompanySelectionScreenState extends State<BusCompanySelectionScreen> {
-  // إزالة منطق المفضلة المحلي
-  // final Set<String> _favoriteCompanies = <String>{};
-
-  // bool _isFavorite(String companyId) {
-  //   return _favoriteCompanies.contains(companyId);
-  // }
-
-  // void _toggleFavorite(dynamic company) {
-  //   setState(() {
-  //     if (_favoriteCompanies.contains(company.id)) {
-  //       _favoriteCompanies.remove(company.id);
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('تمت إزالة ${company.name} من المفضلة'),
-  //           backgroundColor: const Color(0xFF127C8A),
-  //         ),
-  //       );
-  //     } else {
-  //       _favoriteCompanies.add(company.id);
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('تمت إضافة ${company.name} إلى المفضلة'),
-  //           backgroundColor: const Color(0xFF127C8A),
-  //         ),
-  //       );
-  //     }
-  //   });
-  // }
-
-  bool _isFavorite(String companyId, List<FavoriteCompany> favorites) {
-    return favorites.any((c) => c.id == companyId);
-  }
+  final Set<String> favorites = {};
 
   @override
   Widget build(BuildContext context) {
-    final favoriteProvider = Provider.of<FavoriteProvider>(context);
-    final favoriteCompanies = favoriteProvider.favoriteCompanies;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'شركات الباصات',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('شركات الباصات', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF127C8A),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // معلومات الرحلة
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF127C8A),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF127C8A),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('من: ${widget.fromCity}', style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 15)),
+                      const SizedBox(height: 4),
+                      Text('إلى: ${widget.toCity}', style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 15)),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${widget.date.day}/${widget.date.month}/${widget.date.year}',
+                      style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'من: ${widget.fromProvince}',
-                            style: const TextStyle(
-                              fontFamily: 'Cairo',
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+            const SizedBox(height: 18),
+            Expanded(
+              child: GridView.builder(
+                itemCount: busCompanies.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                ),
+                itemBuilder: (context, index) {
+                  final company = busCompanies[index];
+                  final isFavorite = favorites.contains(company.id);
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BusSeatSelectionScreen(
+                            company: company,
+                            fromCity: widget.fromCity,
+                            toCity: widget.toCity,
+                            date: widget.date,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'إلى: ${widget.toProvince}',
-                            style: const TextStyle(
-                              fontFamily: 'Cairo',
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.07),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${widget.date.day}/${widget.date.month}/${widget.date.year}',
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          // قائمة الشركات
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: BusData.companies.length,
-              itemBuilder: (context, index) {
-                final company = BusData.companies[index];
-                final isFavorite = _isFavorite(company.id, favoriteCompanies);
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        // إنشاء رحلة تجريبية
-                        final trip = BusData.createSampleTrip(
-                          fromProvince: widget.fromProvince,
-                          toProvince: widget.toProvince,
-                          date: widget.date,
-                          companyId: company.id,
-                        );
-                        
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BusSeatSelectionScreen(trip: trip),
-                          ),
-                        );
-                      },
                       child: Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Row(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // شعار الشركة
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF127C8A).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  company.logo,
-                                  style: const TextStyle(fontSize: 24),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            
-                            // معلومات الشركة
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    company.name,
-                                    style: const TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    company.description,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        size: 16,
-                                        color: Colors.amber[600],
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        company.rating.toString(),
-                                        style: const TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF1F2937),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '(${company.reviewCount})',
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            
-                            // سعر الرحلة والمفضلة
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        if (!isFavorite) {
-                                          final favCompany = FavoriteCompany(
-                                            id: company.id,
-                                            name: company.name,
-                                            logo: company.logo,
-                                            type: CompanyType.bus,
-                                            rating: company.rating,
-                                            routes: company.reviewCount,
-                                            isFavorite: true,
-                                          );
-                                          favoriteProvider.toggleCompanyFavorite(favCompany);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('تمت إضافة ${company.name} إلى المفضلة'),
-                                              backgroundColor: const Color(0xFF127C8A),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                      icon: Icon(
-                                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                                        color: isFavorite ? Colors.red : Colors.grey,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const Text(
-                                      '2500 ل.س',
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF127C8A),
-                                      ),
-                                    ),
-                                  ],
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: const Color(0xFF127C8A).withOpacity(0.12),
+                                  child: Text(company.logo, style: const TextStyle(fontSize: 28)),
                                 ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                IconButton(
+                                  icon: Icon(
+                                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                                    color: isFavorite ? Colors.red : Colors.grey,
                                   ),
-                                  child: const Text(
-                                    'متوفر',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (isFavorite) {
+                                        favorites.remove(company.id);
+                                      } else {
+                                        favorites.add(company.id);
+                                      }
+                                    });
+                                  },
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(company.name, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1F2937))),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.access_time, size: 16, color: Color(0xFF127C8A)),
+                                const SizedBox(width: 4),
+                                Text(company.time, style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xFF127C8A))),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.attach_money, size: 16, color: Color(0xFF127C8A)),
+                                const SizedBox(width: 4),
+                                Text('${company.price} ل.س', style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xFF127C8A), fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

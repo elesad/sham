@@ -166,9 +166,20 @@ class _AccountScreenState extends State<AccountScreen> {
                 backgroundColor: Color(0xFF127C8A),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: EdgeInsets.symmetric(vertical: 14),
+                textStyle: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               icon: Icon(Icons.login),
-              label: Text('تسجيل الدخول'),
+              label: Text('تسجيل الدخول', style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              )),
               onPressed: _showLoginDialog,
             ),
             const SizedBox(height: 24),
@@ -187,9 +198,20 @@ class _AccountScreenState extends State<AccountScreen> {
                         backgroundColor: Color(0xFFFF7C2D),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: EdgeInsets.symmetric(vertical: 12),
+                        textStyle: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       icon: Icon(Icons.language),
-                      label: Text('تغيير اللغة'),
+                      label: Text('تغيير اللغة', style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                       onPressed: _showLanguageDialog,
                     ),
                     const SizedBox(height: 12),
@@ -199,9 +221,20 @@ class _AccountScreenState extends State<AccountScreen> {
                         backgroundColor: Color(0xFF6366F1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: EdgeInsets.symmetric(vertical: 12),
+                        textStyle: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       icon: Icon(Icons.dark_mode),
-                      label: Text('الوضع الداكن'),
+                      label: Text('الوضع الداكن', style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                       onPressed: () {
                         widget.onToggleDarkMode?.call();
                         setState(() => isDark = !isDark);
@@ -214,9 +247,20 @@ class _AccountScreenState extends State<AccountScreen> {
                         backgroundColor: notificationsMuted ? Color(0xFF94A3B8) : Color(0xFF6B7280),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: EdgeInsets.symmetric(vertical: 12),
+                        textStyle: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       icon: Icon(notificationsMuted ? Icons.notifications_off : Icons.notifications_active),
-                      label: Text(notificationsMuted ? 'الإشعارات مكتومة' : 'كتم الإشعارات'),
+                      label: Text(notificationsMuted ? 'الإشعارات مكتومة' : 'كتم الإشعارات', style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                       onPressed: () {
                         setState(() => notificationsMuted = !notificationsMuted);
                         ScaffoldMessenger.of(context).showSnackBar(

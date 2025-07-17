@@ -1,526 +1,192 @@
 import 'package:flutter/material.dart';
-import '../models/hotel_models.dart';
-import '../models/flight_models.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 
 class HotelTicketScreen extends StatelessWidget {
-  final Hotel hotel;
-  final String guestName;
-  final String guestEmail;
-  final String guestPhone;
-  final DateTime checkInDate;
-  final DateTime checkOutDate;
-  final int numberOfGuests;
-  final int numberOfRooms;
-  final double totalPrice;
-  final String paymentMethod;
-  final VisaInfo? visaInfo;
-
-  const HotelTicketScreen({
-    super.key,
-    required this.hotel,
-    required this.guestName,
-    required this.guestEmail,
-    required this.guestPhone,
-    required this.checkInDate,
-    required this.checkOutDate,
-    required this.numberOfGuests,
-    required this.numberOfRooms,
-    required this.totalPrice,
-    required this.paymentMethod,
-    this.visaInfo,
-  });
+  final Map<String, dynamic> bookingData;
+  const HotelTicketScreen({Key? key, required this.bookingData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ticketNumber = 'HTL-${DateTime.now().millisecondsSinceEpoch}';
-    final nights = checkOutDate.difference(checkInDate).inDays;
-    final verificationCode = '${(DateTime.now().millisecondsSinceEpoch % 900000) + 100000}';
+    final hotelName = bookingData['hotelName'] ?? '';
+    final hotelImage = bookingData['hotelImage'] ?? '';
+    final location = bookingData['location'] ?? '';
+    final rating = bookingData['rating']?.toString() ?? '';
+    final price = bookingData['price']?.toString() ?? '';
+    final checkInDate = bookingData['checkInDate'] as DateTime?;
+    final checkOutDate = bookingData['checkOutDate'] as DateTime?;
+    final rooms = bookingData['rooms']?.toString() ?? '';
+    final guests = bookingData['guests']?.toString() ?? '';
+    final name = bookingData['name'] ?? '';
+    final email = bookingData['email'] ?? '';
+    final phone = bookingData['phone'] ?? '';
+    final id = bookingData['id'] ?? '';
+    final birthDate = bookingData['birthDate'] as DateTime?;
+    final bookingId = bookingData['bookingId'] ?? 'SHM${DateTime.now().millisecondsSinceEpoch}';
+    final nights = checkInDate != null && checkOutDate != null ? checkOutDate.difference(checkInDate).inDays : 1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'تذكرة الفندق',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: const Color(0xFF127C8A),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        title: const Text('تذكرة الفندق'),
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // رسالة النجاح
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF10B981), Color(0xFF059669)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.hotel,
-                    color: Colors.white,
-                    size: 60,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: hotelImage.isNotEmpty
+                        ? Image.network(hotelImage, height: 100, width: 100, fit: BoxFit.cover)
+                        : const Icon(Icons.hotel, size: 80),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'تم الحجز بنجاح!',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  Text(hotelName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on, size: 18, color: Colors.grey[700]),
+                      Text(location, style: TextStyle(color: Colors.grey[700])),
+                      const SizedBox(width: 12),
+                      Icon(Icons.star, color: Colors.amber, size: 18),
+                      Text(rating, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(height: 32, thickness: 1.2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('الدخول:', style: TextStyle(color: Colors.grey[700])),
+                          Text(checkInDate != null ? DateFormat('yyyy/MM/dd').format(checkInDate) : ''),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('الخروج:', style: TextStyle(color: Colors.grey[700])),
+                          Text(checkOutDate != null ? DateFormat('yyyy/MM/dd').format(checkOutDate) : ''),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('عدد الليالي:', style: TextStyle(color: Colors.grey[700])),
+                          Text('$nights'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('الغرف:', style: TextStyle(color: Colors.grey[700])),
+                          Text(rooms),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('الأشخاص:', style: TextStyle(color: Colors.grey[700])),
+                          Text(guests),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('السعر:', style: TextStyle(color: Colors.grey[700])),
+                          Text('$price ل.س'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 32, thickness: 1.2),
+                  Row(
+                    children: [
+                      const Icon(Icons.person, size: 18),
+                      const SizedBox(width: 4),
+                      Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.email, size: 18),
+                      const SizedBox(width: 4),
+                      Text(email),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone, size: 18),
+                      const SizedBox(width: 4),
+                      Text(phone),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.badge, size: 18),
+                      const SizedBox(width: 4),
+                      Text(id),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.cake, size: 18),
+                      const SizedBox(width: 4),
+                      Text(birthDate != null ? DateFormat('yyyy/MM/dd').format(birthDate) : ''),
+                    ],
+                  ),
+                  const Divider(height: 32, thickness: 1.2),
+                  QrImageView(
+                    data: bookingId,
+                    version: QrVersions.auto,
+                    size: 120,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'رقم التذكرة: $ticketNumber',
-                    style: const TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 14,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // التذكرة الرئيسية
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // رأس التذكرة
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF127C8A), Color(0xFF0F5F6B)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  Text('رقم الحجز: $bookingId', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // TODO: تحميل التذكرة كصورة
+                        },
+                        icon: const Icon(Icons.download),
+                        label: const Text('تحميل'),
                       ),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // TODO: إرسال التذكرة بالبريد
+                        },
+                        icon: const Icon(Icons.email),
+                        label: const Text('إرسال'),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  hotel.images.first,
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    hotel.name,
-                                    style: const TextStyle(
-                                      fontFamily: 'Cairo',
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    hotel.province,
-                                    style: const TextStyle(
-                                      fontFamily: 'Cairo',
-                                      color: Colors.white70,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildTicketInfo('تاريخ الدخول', '${checkInDate.day}/${checkInDate.month}/${checkInDate.year}'),
-                            _buildTicketInfo('تاريخ الخروج', '${checkOutDate.day}/${checkOutDate.month}/${checkOutDate.year}'),
-                            _buildTicketInfo('عدد الليالي', '$nights'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // معلومات الفندق
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'التقييم',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        size: 16,
-                                        color: Colors.amber[600],
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        hotel.rating.toString(),
-                                        style: const TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        ' (${hotel.reviewCount})',
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '${hotel.stars} نجوم',
-                                  style: const TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF127C8A),
-                                  ),
-                                ),
-                                Text(
-                                  hotel.address,
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 10,
-                                    color: Colors.grey[500],
-                                  ),
-                                  textAlign: TextAlign.end,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          hotel.description,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // معلومات الضيف
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'معلومات الضيف',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF127C8A),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildGuestInfo('الاسم', guestName),
-                        _buildGuestInfo('البريد الإلكتروني', guestEmail),
-                        _buildGuestInfo('رقم الهاتف', guestPhone),
-                        _buildGuestInfo('عدد الضيوف', '$numberOfGuests'),
-                        _buildGuestInfo('عدد الغرف', '$numberOfRooms'),
-                      ],
-                    ),
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // معلومات الدفع
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'معلومات الدفع',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF127C8A),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildGuestInfo('طريقة الدفع', paymentMethod == 'visa' ? 'فيزا' : 'كاش عند الوصول'),
-                        _buildGuestInfo('السعر الإجمالي', '${totalPrice.toInt()} ${hotel.currency}'),
-                        if (visaInfo != null) ...[
-                          _buildGuestInfo('رقم البطاقة', '**** **** **** ${visaInfo!.cardNumber.substring(visaInfo!.cardNumber.length - 4)}'),
-                          _buildGuestInfo('اسم حامل البطاقة', visaInfo!.cardHolderName),
-                        ],
-                      ],
-                    ),
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // المرافق
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'المرافق المتوفرة',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF127C8A),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: hotel.amenities.map((amenity) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF127C8A).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF127C8A).withValues(alpha: 0.3)),
-                              ),
-                              child: Text(
-                                amenity,
-                                style: const TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 10,
-                                  color: Color(0xFF127C8A),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // رمز التحقق
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'رمز التحقق',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF127C8A),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF127C8A).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF127C8A).withValues(alpha: 0.3)),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                verificationCode,
-                                style: const TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF127C8A),
-                                  letterSpacing: 8,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'سيتم إرسال هذا الرمز إلى رقم هاتفك',
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            
-            // زر العودة للرئيسية
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF127C8A),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'العودة للرئيسية',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTicketInfo(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Cairo',
-            color: Colors.white70,
-            fontSize: 10,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'Cairo',
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGuestInfo(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 12,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

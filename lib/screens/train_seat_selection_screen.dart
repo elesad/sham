@@ -1,46 +1,48 @@
 import 'package:flutter/material.dart';
-import 'bus_booking_info_screen.dart';
+import 'train_booking_info_screen.dart';
 
 enum SeatGender { male, female }
 
-class BusSeat {
+class TrainSeat {
   final int row;
   final int col;
   SeatGender? gender;
   bool reserved;
-  BusSeat({required this.row, required this.col, this.gender, this.reserved = false});
+  TrainSeat({required this.row, required this.col, this.gender, this.reserved = false});
 }
 
-class BusSeatSelectionScreen extends StatefulWidget {
-  final dynamic company;
-  final String fromCity;
-  final String toCity;
+class TrainSeatSelectionScreen extends StatefulWidget {
+  final String companyName;
+  final String fromProvince;
+  final String toProvince;
   final DateTime date;
-
-  const BusSeatSelectionScreen({super.key, required this.company, required this.fromCity, required this.toCity, required this.date});
+  final String tripNumber;
+  final String tripTime;
+  final int price;
+  const TrainSeatSelectionScreen({Key? key, required this.companyName, required this.fromProvince, required this.toProvince, required this.date, required this.tripNumber, required this.tripTime, required this.price}) : super(key: key);
 
   @override
-  State<BusSeatSelectionScreen> createState() => _BusSeatSelectionScreenState();
+  State<TrainSeatSelectionScreen> createState() => _TrainSeatSelectionScreenState();
 }
 
-class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
-  static const int rows = 10;
-  static const int cols = 4; // صفين يمين وصفين يسار
-  late List<List<BusSeat>> seats;
-  BusSeat? selectedSeat;
+class _TrainSeatSelectionScreenState extends State<TrainSeatSelectionScreen> {
+  static const int rows = 8;
+  static const int cols = 4; // 2+2
+  late List<List<TrainSeat>> seats;
+  TrainSeat? selectedSeat;
 
   @override
   void initState() {
     super.initState();
     seats = List.generate(rows, (row) =>
-      List.generate(cols, (col) => BusSeat(row: row, col: col))
+      List.generate(cols, (col) => TrainSeat(row: row, col: col))
     );
     // مثال: بعض المقاعد محجوزة
-    seats[2][1].reserved = true;
-    seats[5][2].reserved = true;
+    seats[1][2].reserved = true;
+    seats[4][0].reserved = true;
   }
 
-  Color _seatColor(BusSeat seat) {
+  Color _seatColor(TrainSeat seat) {
     if (seat.reserved) return Colors.green;
     if (seat.gender == SeatGender.male) return Colors.blue[400]!;
     if (seat.gender == SeatGender.female) return Colors.pink[300]!;
@@ -50,12 +52,10 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('اختيار المقعد - ${widget.company.name}'),
-        backgroundColor: const Color(0xFF127C8A),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: Text('اختيار المقعد - ${widget.companyName}'),
+        backgroundColor: Colors.green.shade700,
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -82,7 +82,7 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF127C8A),
+                  backgroundColor: Colors.green.shade700,
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
@@ -90,14 +90,15 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BusBookingInfoScreen(
-                        companyName: widget.company.name,
+                      builder: (context) => TrainBookingInfoScreen(
+                        companyName: widget.companyName,
+                        fromProvince: widget.fromProvince,
+                        toProvince: widget.toProvince,
+                        date: widget.date,
+                        tripNumber: widget.tripNumber,
+                        tripTime: widget.tripTime,
+                        price: widget.price,
                         seatNumber: '${selectedSeat!.row + 1}${String.fromCharCode(65 + selectedSeat!.col)}',
-                        tripDate: '${widget.date.year}/${widget.date.month}/${widget.date.day}',
-                        tripTime: widget.company.time ?? '',
-                        bookingId: '', // يمكن توليده لاحقاً
-                        fromCity: widget.fromCity,
-                        toCity: widget.toCity,
                       ),
                     ),
                   );
@@ -135,7 +136,7 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
           child: seat.reserved
               ? const Icon(Icons.event_seat, color: Colors.white)
               : seat.gender == null
-                  ? const Icon(Icons.event_seat, color: Color(0xFF127C8A))
+                  ? const Icon(Icons.event_seat, color: Color(0xFF388E3C))
                   : Icon(
                       seat.gender == SeatGender.male ? Icons.male : Icons.female,
                       color: Colors.white,
@@ -215,6 +216,11 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
     );
     if (gender != null) {
       setState(() {
+        for (var rowSeats in seats) {
+          for (var seat in rowSeats) {
+            if (seat == selectedSeat) seat.gender = null;
+          }
+        }
         seats[row][col].gender = gender;
         selectedSeat = seats[row][col];
       });

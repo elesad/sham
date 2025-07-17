@@ -1,33 +1,26 @@
 import 'package:flutter/material.dart';
-import 'flight_company_selection_screen.dart';
+import 'bus_company_selection_screen.dart';
 
-class FlightSearchScreen extends StatefulWidget {
-  const FlightSearchScreen({Key? key}) : super(key: key);
+class BusBookingScreen extends StatefulWidget {
+  const BusBookingScreen({super.key});
 
   @override
-  State<FlightSearchScreen> createState() => _FlightSearchScreenState();
+  State<BusBookingScreen> createState() => _BusBookingScreenState();
 }
 
-class _FlightSearchScreenState extends State<FlightSearchScreen> {
-  final List<String> provinces = const ['دمشق', 'حلب', 'الحسكة'];
-  String? fromProvince = 'دمشق';
-  String? toProvince = 'حلب';
+class _BusBookingScreenState extends State<BusBookingScreen> {
+  final List<String> provinces = const [
+    'ريف دمشق', 'حمص', 'حماه', 'حلب', 'الرقة', 'ادلب', 'اللاذقية',
+  ];
+  String? fromProvince;
+  String? toProvince;
   String selectedDay = 'اليوم';
-  DateTime? selectedDate = DateTime.now();
-  bool isFavorite = false;
-
-  void _swapProvinces() {
-    setState(() {
-      final temp = fromProvince;
-      fromProvince = toProvince;
-      toProvince = temp;
-    });
-  }
+  DateTime? selectedDate;
 
   void _pickDate() async {
     final date = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
+      initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       locale: const Locale('ar', 'SA'),
@@ -44,27 +37,21 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('حجز طيران'),
-        centerTitle: true,
-        backgroundColor: Colors.orange.shade700,
+        title: const Text('حجز باص', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF127C8A),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _buildDropdown('من', fromProvince, (val) => setState(() => fromProvince = val))),
-                IconButton(
-                  icon: const Icon(Icons.swap_horiz, size: 28, color: Colors.orange),
-                  onPressed: _swapProvinces,
-                  tooltip: 'تبديل',
-                ),
-                Expanded(child: _buildDropdown('إلى', toProvince, (val) => setState(() => toProvince = val))),
-              ],
-            ),
+            _buildDropdown('من أين', fromProvince, (val) => setState(() => fromProvince = val)),
+            const SizedBox(height: 16),
+            _buildDropdown('إلى أين', toProvince, (val) => setState(() => toProvince = val)),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -74,31 +61,25 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: _pickDate,
-                  icon: const Icon(Icons.date_range, color: Colors.orange),
-                  label: const Text('اختر التاريخ', style: TextStyle(fontFamily: 'Cairo', color: Colors.orange)),
+                  icon: const Icon(Icons.date_range, color: Color(0xFF127C8A)),
+                  label: const Text('اختر التاريخ', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF127C8A))),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.orange),
+                    side: const BorderSide(color: Color(0xFF127C8A)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: Colors.red),
-                  onPressed: () => setState(() => isFavorite = !isFavorite),
-                  tooltip: 'إضافة إلى المفضلة',
                 ),
               ],
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: (fromProvince != null && toProvince != null && fromProvince != toProvince)
+              onPressed: (fromProvince != null && toProvince != null)
                   ? () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FlightCompanySelectionScreen(
-                            fromProvince: fromProvince!,
-                            toProvince: toProvince!,
+                          builder: (context) => BusCompanySelectionScreen(
+                            fromCity: fromProvince!,
+                            toCity: toProvince!,
                             date: selectedDate ?? DateTime.now(),
                           ),
                         ),
@@ -108,7 +89,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
               icon: const Icon(Icons.search),
               label: const Text('ابحث عن رحلة', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
+                backgroundColor: const Color(0xFF127C8A),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textStyle: const TextStyle(fontSize: 18, fontFamily: 'Cairo'),
@@ -118,7 +99,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
             const Spacer(),
             Center(
               child: Text(
-                'رحلات جوية مريحة مع شام',
+                'رحلات آمنة ومريحة مع شام',
                 style: TextStyle(fontFamily: 'Cairo', color: Colors.grey[500]),
               ),
             ),
@@ -167,9 +148,9 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
     return ChoiceChip(
       label: Text(day, style: const TextStyle(fontFamily: 'Cairo')),
       selected: isSelected,
-      selectedColor: Colors.orange.shade700,
+      selectedColor: const Color(0xFF127C8A),
       backgroundColor: Colors.grey[200],
-      labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.orange.shade700, fontFamily: 'Cairo'),
+      labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFF127C8A), fontFamily: 'Cairo'),
       onSelected: (_) {
         setState(() {
           selectedDay = day;

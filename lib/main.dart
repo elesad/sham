@@ -6,10 +6,25 @@ import 'screens/home_page.dart';
 import 'screens/chatbot.dart';
 import 'screens/my_trips.dart';
 import 'screens/favorite_screen.dart';
+import 'package:provider/provider.dart';
+import 'models/app_state.dart';
+import 'screens/bus_company_selection_screen.dart';
+import 'screens/bus_seat_selection.dart';
+import 'screens/booking_summary_screen.dart';
+import 'screens/phone_code_screen.dart';
+import 'screens/ticket_screen.dart';
 
 
 void main() {
-  runApp(const ShamApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (_) => MyTripsProvider()),
+      ],
+      child: const ShamApp(),
+    ),
+  );
 }
 
 class ShamApp extends StatefulWidget {
@@ -178,6 +193,43 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'ملفي الشخصي',
           ),
         ],
+      ),
+    );
+  }
+}
+
+// مثال زر في الصفحة الرئيسية لتجربة الحجز الجديد
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('مواصلات الشام'),
+        backgroundColor: const Color(0xFF1E3A8A),
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1E3A8A),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              '/bus_company_selection',
+              arguments: {
+                'fromCity': 'دمشق',
+                'toCity': 'حلب',
+                'date': DateTime.now().add(const Duration(days: 1)),
+              },
+            );
+          },
+          child: const Text('جرب حجز باص جديد', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 18)),
+        ),
       ),
     );
   }

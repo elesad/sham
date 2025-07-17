@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import '../models/bus_models.dart';
-import 'ticket_screen.dart';
+
+enum PaymentMethod { visa, onBoard }
 
 class BookingSummaryScreen extends StatefulWidget {
-  final BusTrip trip;
-  final List<BusSeat> selectedSeats;
-  final Map<String, SeatGender> seatGenders;
+  final dynamic company;
+  final String fromCity;
+  final String toCity;
+  final DateTime date;
+  final dynamic seat;
 
   const BookingSummaryScreen({
     super.key,
-    required this.trip,
-    required this.selectedSeats,
-    required this.seatGenders,
+    required this.company,
+    required this.fromCity,
+    required this.toCity,
+    required this.date,
+    required this.seat,
   });
 
   @override
@@ -20,315 +24,253 @@ class BookingSummaryScreen extends StatefulWidget {
 
 class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _idController = TextEditingController();
-  String _paymentMethod = 'cash';
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _idController.dispose();
-    super.dispose();
-  }
-
-  void _confirmBooking() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    // محاكاة عملية الحجز
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() => _isLoading = false);
-      
-      // الانتقال إلى صفحة التذكرة
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TicketScreen(
-            trip: widget.trip,
-            selectedSeats: widget.selectedSeats,
-            seatGenders: widget.seatGenders,
-            passengerName: _nameController.text,
-            passengerEmail: _emailController.text,
-            passengerPhone: _phoneController.text,
-            passengerId: _idController.text,
-            paymentMethod: _paymentMethod,
-          ),
-        ),
-      );
-    }
-  }
+  String email = '';
+  String phone = '';
+  String firstName = '';
+  String lastName = '';
+  String idNumber = '';
+  PaymentMethod paymentMethod = PaymentMethod.onBoard;
+  int progressStep = 3;
+  DateTime? birthDate;
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice = widget.selectedSeats.length * widget.trip.price;
-
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final hotel = args != null ? args['hotel'] : null;
+    final isHotel = hotel != null;
+    final nights = args != null ? args['nights'] : null;
+    final rooms = args != null ? args['rooms'] : null;
+    final checkInDate = args != null ? args['checkInDate'] : null;
+    final totalPrice = args != null ? args['totalPrice'] : null;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'تأكيد الحجز',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text(isHotel ? 'تأكيد حجز الفندق' : 'تأكيد الحجز', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF127C8A),
-        foregroundColor: Colors.white,
+                  foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ملخص الرحلة
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ملخص الرحلة',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF127C8A),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInfoRow('من:', widget.trip.fromProvince),
-                    _buildInfoRow('إلى:', widget.trip.toProvince),
-                    _buildInfoRow('التاريخ:', '${widget.trip.departureTime.day}/${widget.trip.departureTime.month}/${widget.trip.departureTime.year}'),
-                    _buildInfoRow('الوقت:', '${widget.trip.departureTime.hour.toString().padLeft(2, '0')}:${widget.trip.departureTime.minute.toString().padLeft(2, '0')}'),
-                    _buildInfoRow('المقاعد:', '${widget.selectedSeats.length} مقعد'),
-                    _buildInfoRow('السعر الإجمالي:', '${totalPrice.toInt()} ل.س'),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+                key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+              _buildProgressBar(),
+              const SizedBox(height: 10),
+              if (isHotel) _hotelSummaryCard(hotel, nights, rooms, checkInDate, totalPrice),
+              if (!isHotel) _summaryCard(),
+              const SizedBox(height: 18),
+              _buildTextField('الإيميل', (v) => email = v!, TextInputType.emailAddress, validator: (v) => v!.isEmpty ? 'أدخل الإيميل' : null),
+              const SizedBox(height: 12),
+              _buildTextField('رقم الهاتف', (v) => phone = v!, TextInputType.phone, validator: (v) => v!.isEmpty ? 'أدخل رقم الهاتف' : null),
+              const SizedBox(height: 12),
+              _buildTextField('الاسم', (v) => firstName = v!, TextInputType.text, validator: (v) => v!.isEmpty ? 'أدخل الاسم' : null),
+              const SizedBox(height: 12),
+              _buildTextField('اللقب', (v) => lastName = v!, TextInputType.text, validator: (v) => v!.isEmpty ? 'أدخل اللقب' : null),
+              const SizedBox(height: 12),
+              _buildTextField('رقم الهوية أو الجواز', (v) => idNumber = v!, TextInputType.text, validator: (v) => v!.isEmpty ? 'أدخل رقم الهوية أو الجواز' : null),
+          const SizedBox(height: 12),
+              _buildBirthDateField(),
+              const SizedBox(height: 18),
+              const Text('طريقة الدفع:', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+              Row(
+        children: [
+                  Radio<PaymentMethod>(
+                    value: PaymentMethod.visa,
+                    groupValue: paymentMethod,
+                    onChanged: (v) => setState(() => paymentMethod = v!),
+                  ),
+                  const Text('فيزا', style: TextStyle(fontFamily: 'Cairo')),
+                  const SizedBox(width: 24),
+                  Radio<PaymentMethod>(
+                    value: PaymentMethod.onBoard,
+                    groupValue: paymentMethod,
+                    onChanged: (v) => setState(() => paymentMethod = v!),
+                  ),
+                  const Text('عند الصعود', style: TextStyle(fontFamily: 'Cairo')),
+                ],
               ),
-              const SizedBox(height: 20),
-
-              // معلومات المسافر
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'معلومات المسافر',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF127C8A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'الاسم واللقب',
-                        prefixIcon: Icon(Icons.person, color: Color(0xFF127C8A)),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال الاسم';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'البريد الإلكتروني',
-                        prefixIcon: Icon(Icons.email, color: Color(0xFF127C8A)),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال البريد الإلكتروني';
-                        }
-                        if (!value.contains('@')) {
-                          return 'يرجى إدخال بريد إلكتروني صحيح';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'رقم الهاتف',
-                        prefixIcon: Icon(Icons.phone, color: Color(0xFF127C8A)),
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال رقم الهاتف';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _idController,
-                      decoration: const InputDecoration(
-                        labelText: 'رقم الهوية أو الجواز',
-                        prefixIcon: Icon(Icons.credit_card, color: Color(0xFF127C8A)),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال رقم الهوية أو الجواز';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // طريقة الدفع
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'طريقة الدفع',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF127C8A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    RadioListTile<String>(
-                      title: const Text('فيزا / ماستركارد', style: TextStyle(fontFamily: 'Cairo')),
-                      value: 'card',
-                      groupValue: _paymentMethod,
-                      onChanged: (value) => setState(() => _paymentMethod = value!),
-                      activeColor: const Color(0xFF127C8A),
-                    ),
-                    RadioListTile<String>(
-                      title: const Text('الدفع عند الصعود', style: TextStyle(fontFamily: 'Cairo')),
-                      value: 'cash',
-                      groupValue: _paymentMethod,
-                      onChanged: (value) => setState(() => _paymentMethod = value!),
-                      activeColor: const Color(0xFF127C8A),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // زر التأكيد
+              const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _isLoading ? null : _confirmBooking,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF127C8A),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'تأكيد الحجز',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                onPressed: () {
+                  if (_formKey.currentState!.validate() && birthDate != null) {
+                    _formKey.currentState!.save();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('تم إرسال كود التحقق إلى هاتفك'), backgroundColor: Color(0xFF127C8A)),
+                    );
+                    final bookingData = isHotel
+                        ? {
+                            'hotel': hotel,
+                            'nights': nights,
+                            'rooms': rooms,
+                            'checkInDate': checkInDate,
+                            'totalPrice': totalPrice,
+                            'email': email,
+                            'phone': phone,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'idNumber': idNumber,
+                            'birthDate': birthDate,
+                            'paymentMethod': paymentMethod,
+                          }
+                        : {
+                            'company': widget.company,
+                            'fromCity': widget.fromCity,
+                            'toCity': widget.toCity,
+                            'date': widget.date,
+                            'seat': widget.seat,
+                            'email': email,
+                            'phone': phone,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'idNumber': idNumber,
+                            'birthDate': birthDate,
+                            'paymentMethod': paymentMethod,
+                          };
+                    Navigator.pushNamed(context, '/phone_code', arguments: bookingData);
+                  } else if (birthDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('يرجى اختيار تاريخ الميلاد'), backgroundColor: Colors.red),
+                    );
+                  }
+                },
+                child: const Text('تأكيد', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
+                    ],
+                ),
               ),
-            ],
-          ),
+      ),
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: List.generate(5, (i) {
+          final isActive = i < progressStep;
+          return Expanded(
+            child: Container(
+              height: 6,
+              margin: EdgeInsets.only(left: i == 4 ? 0 : 4),
+              decoration: BoxDecoration(
+                color: isActive ? const Color(0xFF127C8A) : Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, Function(String?) onSaved, TextInputType type, {String? Function(String?)? validator}) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      keyboardType: type,
+      validator: validator,
+      onSaved: onSaved,
+      style: const TextStyle(fontFamily: 'Cairo'),
+    );
+  }
+
+  Widget _summaryCard() {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('الشركة: ${widget.company.name}', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text('من: ${widget.fromCity}  إلى: ${widget.toCity}', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('التاريخ: ${widget.date.day}/${widget.date.month}/${widget.date.year}', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('رقم المقعد: صف ${widget.seat.row + 1} - عمود ${widget.seat.col + 1}', style: const TextStyle(fontFamily: 'Cairo')),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+  Widget _hotelSummaryCard(hotel, nights, rooms, checkInDate, totalPrice) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('الفندق: ${hotel.name}', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text('المحافظة: ${hotel.province}', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('تاريخ الدخول: ${checkInDate.day}/${checkInDate.month}/${checkInDate.year}', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('عدد الليالي: $nights', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('عدد الغرف: $rooms', style: const TextStyle(fontFamily: 'Cairo')),
+            const SizedBox(height: 6),
+            Text('السعر الإجمالي: $totalPrice ل.س', style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFF127C8A), fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBirthDateField() {
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: DateTime(2000, 1, 1),
+          firstDate: DateTime(1940),
+          lastDate: DateTime.now(),
+          locale: const Locale('ar'),
+        );
+        if (picked != null) setState(() => birthDate = picked);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cake, color: Color(0xFF127C8A)),
+            const SizedBox(width: 8),
           Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 14,
-              color: Colors.grey,
+              birthDate == null
+                  ? 'تاريخ الميلاد'
+                  : '${birthDate!.day}/${birthDate!.month}/${birthDate!.year}',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: birthDate == null ? Colors.grey[500] : Colors.black,
+                fontSize: 15,
+              ),
             ),
+          ],
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

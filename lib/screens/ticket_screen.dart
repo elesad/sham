@@ -1,296 +1,286 @@
 import 'package:flutter/material.dart';
-import '../models/bus_models.dart';
+
+enum PaymentMethod { visa, onBoard }
 
 class TicketScreen extends StatelessWidget {
-  final BusTrip trip;
-  final List<BusSeat> selectedSeats;
-  final Map<String, SeatGender> seatGenders;
-  final String passengerName;
-  final String passengerEmail;
-  final String passengerPhone;
-  final String passengerId;
-  final String paymentMethod;
+  final Map<String, dynamic> bookingData;
+  const TicketScreen({super.key, required this.bookingData});
 
-  const TicketScreen({
-    super.key,
-    required this.trip,
-    required this.selectedSeats,
-    required this.seatGenders,
-    required this.passengerName,
-    required this.passengerEmail,
-    required this.passengerPhone,
-    required this.passengerId,
-    required this.paymentMethod,
-  });
+  final int progressStep = 5;
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice = selectedSeats.length * trip.price;
-    final ticketNumber = 'TKT-${DateTime.now().millisecondsSinceEpoch}';
-
+    final isHotel = bookingData.containsKey('hotel');
+    if (isHotel) {
+      final hotel = bookingData['hotel'];
+      final nights = bookingData['nights'];
+      final rooms = bookingData['rooms'];
+      final checkInDate = bookingData['checkInDate'] as DateTime;
+      final totalPrice = bookingData['totalPrice'];
+      final email = bookingData['email'];
+      final phone = bookingData['phone'];
+      final firstName = bookingData['firstName'];
+      final lastName = bookingData['lastName'];
+      final idNumber = bookingData['idNumber'];
+      final paymentMethod = bookingData['paymentMethod'];
+      final passengerName = '$firstName $lastName';
+      final ticketNumber = 'HTL${checkInDate.millisecondsSinceEpoch % 1000000}';
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'التذكرة',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+          title: const Text('تذكرتك', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF127C8A),
         foregroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
         child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // رسالة النجاح
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF10B981), Color(0xFF059669)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildProgressBar(),
+                const SizedBox(height: 10),
+                _hotelTicketCard(
+                  hotel: hotel,
+                  nights: nights,
+                  rooms: rooms,
+                  checkInDate: checkInDate,
+                  totalPrice: totalPrice,
+                  passengerName: passengerName,
+                  idNumber: idNumber,
+                  email: email,
+                  phone: phone,
+                  paymentMethod: paymentMethod,
+                  ticketNumber: ticketNumber,
                 ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
+                const SizedBox(height: 32),
+                const Text('نتمنى لك إقامة سعيدة!', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF127C8A))),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.check_circle,
-                    color: Colors.white,
-                    size: 60,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'تم الحجز بنجاح!',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF127C8A),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('تمت مشاركة التذكرة!'), backgroundColor: Color(0xFF127C8A)),
+                        );
+                      },
+                      icon: const Icon(Icons.share),
+                      label: const Text('مشاركة', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'رقم التذكرة: $ticketNumber',
-                    style: const TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 14,
-                      color: Colors.white,
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[600],
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      icon: const Icon(Icons.home),
+                      label: const Text('الرئيسية', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
                     ),
+                  ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+        ),
+      );
+    } else {
+      final company = bookingData['company'];
+      final fromCity = bookingData['fromCity'];
+      final toCity = bookingData['toCity'];
+      final date = bookingData['date'] as DateTime;
+      final seat = bookingData['seat'];
+      final email = bookingData['email'];
+      final phone = bookingData['phone'];
+      final firstName = bookingData['firstName'];
+      final lastName = bookingData['lastName'];
+      final idNumber = bookingData['idNumber'];
+      final paymentMethod = bookingData['paymentMethod'];
+      final passengerName = '$firstName $lastName';
+      final seatLabel = 'صف ${seat.row + 1} - عمود ${seat.col + 1}';
+      final ticketNumber = 'TKT${date.millisecondsSinceEpoch % 1000000}';
 
-            // التذكرة الرئيسية
-            Container(
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: const Text('تذكرتك', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFF127C8A),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildProgressBar(),
+                const SizedBox(height: 10),
+                _ticketCard(
+                  company: company,
+                  fromCity: fromCity,
+                  toCity: toCity,
+                  date: date,
+                  seatLabel: seatLabel,
+                  passengerName: passengerName,
+                  idNumber: idNumber,
+                  paymentMethod: paymentMethod,
+                  ticketNumber: ticketNumber,
+                ),
+                const SizedBox(height: 32),
+                const Text('نتمنى لك رحلة سعيدة!', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF127C8A))),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF127C8A),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('تمت مشاركة التذكرة!'), backgroundColor: Color(0xFF127C8A)),
+                        );
+                      },
+                      icon: const Icon(Icons.share),
+                      label: const Text('مشاركة', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[600],
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      icon: const Icon(Icons.home),
+                      label: const Text('الرئيسية', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+                    ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildProgressBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: List.generate(5, (i) {
+          final isActive = i < progressStep;
+          return Expanded(
+            child: Container(
+              height: 6,
+              margin: EdgeInsets.only(left: i == 4 ? 0 : 4),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // رأس التذكرة
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF127C8A), Color(0xFF0F5F6B)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'من',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  trip.fromProvince,
-                                  style: const TextStyle(
-                                    fontFamily: 'Cairo',
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'إلى',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  trip.toProvince,
-                                  style: const TextStyle(
-                                    fontFamily: 'Cairo',
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildTicketInfo('التاريخ', '${trip.departureTime.day}/${trip.departureTime.month}/${trip.departureTime.year}'),
-                            _buildTicketInfo('الوقت', '${trip.departureTime.hour.toString().padLeft(2, '0')}:${trip.departureTime.minute.toString().padLeft(2, '0')}'),
-                            _buildTicketInfo('رقم الباص', trip.busNumber),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // تفاصيل التذكرة
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        // معلومات المسافر
-                        _buildDetailSection(
-                          'معلومات المسافر',
-                          [
-                            _buildDetailRow('الاسم', passengerName),
-                            _buildDetailRow('البريد الإلكتروني', passengerEmail),
-                            _buildDetailRow('رقم الهاتف', passengerPhone),
-                            _buildDetailRow('رقم الهوية', passengerId),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // المقاعد المختارة
-                        _buildDetailSection(
-                          'المقاعد المختارة',
-                          selectedSeats.map((seat) {
-                            final gender = seatGenders[seat.id];
-                            final genderText = gender == SeatGender.male ? 'رجل' : 'امرأة';
-                            return _buildDetailRow(
-                              'مقعد ${seat.rowNumber}-${seat.seatNumber}',
-                              genderText,
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // معلومات الدفع
-                        _buildDetailSection(
-                          'معلومات الدفع',
-                          [
-                            _buildDetailRow('طريقة الدفع', paymentMethod == 'card' ? 'فيزا / ماستركارد' : 'الدفع عند الصعود'),
-                            _buildDetailRow('السعر الإجمالي', '${totalPrice.toInt()} ل.س'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                color: isActive ? const Color(0xFF127C8A) : Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-            const SizedBox(height: 20),
+          );
+        }),
+      ),
+    );
+  }
 
-            // أزرار الإجراءات
+  Widget _ticketCard({
+    required dynamic company,
+    required String fromCity,
+    required String toCity,
+    required DateTime date,
+    required String seatLabel,
+    required String passengerName,
+    required String idNumber,
+    required dynamic paymentMethod,
+    required String ticketNumber,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 8,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Row(
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // مشاركة التذكرة
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تم مشاركة التذكرة')),
-                      );
-                    },
-                    icon: const Icon(Icons.share),
-                    label: const Text('مشاركة', style: TextStyle(fontFamily: 'Cairo')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: const Color(0xFF127C8A).withOpacity(0.12),
+                  child: Text(company.logo, style: const TextStyle(fontSize: 32)),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // العودة للصفحة الرئيسية
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    icon: const Icon(Icons.home),
-                    label: const Text('الرئيسية', style: TextStyle(fontFamily: 'Cairo')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF127C8A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
+                  child: Text(company.name, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF127C8A))),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF127C8A),
                         borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                   ),
+                  child: Text(ticketNumber, style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const Divider(height: 32, thickness: 1.2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('من', fromCity),
+                const Icon(Icons.arrow_forward, color: Color(0xFF127C8A)),
+                _infoColumn('إلى', toCity),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('التاريخ', '${date.day}/${date.month}/${date.year}'),
+                _infoColumn('المقعد', seatLabel),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('الاسم', passengerName),
+                _infoColumn('الهوية', idNumber),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('الدفع', paymentMethod == PaymentMethod.visa ? 'فيزا' : 'عند الصعود'),
+                // رمز QR وهمي
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.qr_code, size: 38, color: Color(0xFF127C8A)),
                 ),
               ],
             ),
@@ -300,83 +290,113 @@ class TicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTicketInfo(String label, String value) {
-    return Column(
+  Widget _hotelTicketCard({
+    required dynamic hotel,
+    required int nights,
+    required int rooms,
+    required DateTime checkInDate,
+    required int totalPrice,
+    required String passengerName,
+    required String idNumber,
+    required String email,
+    required String phone,
+    required dynamic paymentMethod,
+    required String ticketNumber,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 8,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: const Color(0xFF127C8A).withOpacity(0.12),
+                  child: Text(hotel.image, style: const TextStyle(fontSize: 32)),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(hotel.name, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF127C8A))),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF127C8A),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(ticketNumber, style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const Divider(height: 32, thickness: 1.2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('المحافظة', hotel.province),
+                _infoColumn('تاريخ الدخول', '${checkInDate.day}/${checkInDate.month}/${checkInDate.year}'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('عدد الليالي', '$nights'),
+                _infoColumn('عدد الغرف', '$rooms'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('الاسم', passengerName),
+                _infoColumn('الهوية', idNumber),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoColumn('الإيميل', email),
+                _infoColumn('الهاتف', phone),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Cairo',
-            color: Colors.white70,
-            fontSize: 10,
-          ),
+                _infoColumn('الدفع', paymentMethod == PaymentMethod.visa ? 'فيزا' : 'عند الوصول'),
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.qr_code, size: 38, color: Color(0xFF127C8A)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('السعر الإجمالي: $totalPrice ل.س', style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFF127C8A), fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'Cairo',
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildDetailSection(String title, List<Widget> children) {
+  Widget _infoColumn(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF127C8A),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: children,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontFamily: 'Cairo', color: Colors.grey, fontSize: 12)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1F2937))),
       ],
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 } 

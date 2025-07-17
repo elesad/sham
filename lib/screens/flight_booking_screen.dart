@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/flight_models.dart';
 import '../data/flight_data.dart';
 import 'flight_ticket_screen.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
+import 'my_trips.dart';
 
 class FlightBookingScreen extends StatefulWidget {
   final Flight flight;
@@ -107,11 +110,11 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
 
   void _sendCode() {
     // محاكاة إرسال كود
-    setState(() {
+                setState(() {
       _sentCode = '1234';
       _showCodeVerification = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('تم إرسال كود التحقق إلى رقم الهاتف'),
         backgroundColor: Color(0xFF127C8A),
@@ -121,6 +124,21 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
 
   void _verifyCodeAndBook() {
     if (_codeController.text == _sentCode) {
+      // إضافة الرحلة إلى رحلاتي
+      final trip = Trip(
+        id: widget.flight.id,
+        type: TripType.flight,
+        from: widget.flight.fromCity,
+        to: widget.flight.toCity,
+        date: widget.flight.departureTime,
+        time: widget.flight.flightNumber,
+        company: widget.company.name,
+        status: TripStatus.confirmed,
+        price: widget.flight.price,
+        seatNumber: '-',
+        ticketNumber: 'FLT- {DateTime.now().millisecondsSinceEpoch}',
+      );
+      Provider.of<MyTripsProvider>(context, listen: false).addTrip(trip);
       // الانتقال إلى صفحة التذكرة
       VisaInfo? visaInfo;
       if (_showVisaForm) {
@@ -135,15 +153,21 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => FlightTicketScreen(
-            flight: widget.flight,
-            company: widget.company,
-            passengerName: '${_firstNameController.text} ${_lastNameController.text}',
-            passengerEmail: _emailController.text,
-            passengerPhone: '$_selectedCountryCode${_phoneController.text}',
-            passengerId: _isForeigner ? _passportController.text : _idController.text,
-            nationality: _selectedNationality,
-            birthDate: _birthDate!,
-            visaInfo: visaInfo,
+            bookingInfo: {
+              'firstName': _firstNameController.text,
+              'lastName': _lastNameController.text,
+              'email': _emailController.text,
+              'phone': '$_selectedCountryCode${_phoneController.text}',
+              'idNumber': _isForeigner ? _passportController.text : _idController.text,
+              'birthDate': _birthDate != null ? '${_birthDate!.year}/${_birthDate!.month}/${_birthDate!.day}' : '',
+              'paymentMethod': _showVisaForm ? 'visa' : 'on_board',
+              'fromProvince': widget.flight.fromCity,
+              'toProvince': widget.flight.toCity,
+              'date': widget.flight.departureTime,
+              'flightNumber': widget.flight.flightNumber,
+              'flightTime': '${widget.flight.departureTime.hour.toString().padLeft(2, '0')}:${widget.flight.departureTime.minute.toString().padLeft(2, '0')}',
+              'price': widget.flight.price,
+            },
           ),
         ),
       );
@@ -240,11 +264,11 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
+      child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
               // ملخص الرحلة
               Container(
                 padding: const EdgeInsets.all(16),
@@ -292,10 +316,10 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
                                   color: Color(0xFF1F2937),
                                 ),
                               ),
-                              Text(
+            Text(
                                 widget.flight.flightNumber,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
+              style: TextStyle(
+                fontFamily: 'Cairo',
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                 ),
@@ -308,13 +332,13 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
                           style: const TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF127C8A),
-                          ),
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF127C8A),
+              ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
+            ),
+            const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
@@ -355,10 +379,10 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
+            Text(
                                 '${widget.flight.arrivalTime.difference(widget.flight.departureTime).inHours}h ${widget.flight.arrivalTime.difference(widget.flight.departureTime).inMinutes % 60}m',
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
+              style: TextStyle(
+                fontFamily: 'Cairo',
                                   fontSize: 10,
                                   color: Colors.grey[600],
                                 ),
@@ -377,10 +401,10 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
+            Text(
                                 widget.flight.toCity,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
+              style: TextStyle(
+                fontFamily: 'Cairo',
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                 ),
@@ -759,10 +783,10 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
                           fontFamily: 'Cairo',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                ),
               ),
-            ],
+            ),
+          ],
           ),
         ),
       ),

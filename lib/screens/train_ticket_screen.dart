@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class FlightTicketScreen extends StatelessWidget {
+class TrainTicketScreen extends StatelessWidget {
   final Map<String, dynamic> bookingInfo;
-  const FlightTicketScreen({Key? key, required this.bookingInfo}) : super(key: key);
+  const TrainTicketScreen({Key? key, required this.bookingInfo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تذكرة الطيران'),
+        title: const Text('تذكرة القطار'),
         centerTitle: true,
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: Colors.green.shade700,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -26,7 +26,7 @@ class FlightTicketScreen extends StatelessWidget {
                 children: [
                   Text(
                     'تذكرة الحجز',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green.shade700),
                   ),
                   const SizedBox(height: 16),
                   Divider(),
@@ -37,14 +37,15 @@ class FlightTicketScreen extends StatelessWidget {
                   _ticketDetailRow('من:', bookingInfo['fromProvince']),
                   _ticketDetailRow('إلى:', bookingInfo['toProvince']),
                   _ticketDetailRow('تاريخ الرحلة:', '${bookingInfo['date'].day}/${bookingInfo['date'].month}/${bookingInfo['date'].year}'),
-                  _ticketDetailRow('رقم الرحلة:', bookingInfo['flightNumber']),
-                  _ticketDetailRow('وقت الرحلة:', bookingInfo['flightTime']),
+                  _ticketDetailRow('رقم الرحلة:', bookingInfo['tripNumber']),
+                  _ticketDetailRow('وقت الرحلة:', bookingInfo['tripTime']),
+                  _ticketDetailRow('رقم المقعد:', bookingInfo['seatNumber']),
                   _ticketDetailRow('السعر:', '${bookingInfo['price']} ل.س'),
                   _ticketDetailRow('تاريخ الميلاد:', bookingInfo['birthDate'] ?? ''),
                   _ticketDetailRow('طريقة الدفع:', bookingInfo['paymentMethod'] == 'visa' ? 'Visa' : 'الدفع عند الصعود'),
                   const SizedBox(height: 24),
                   QrImageView(
-                    data: bookingInfo['flightNumber'] + bookingInfo['firstName'] + bookingInfo['lastName'],
+                    data: bookingInfo['tripNumber'] + bookingInfo['firstName'] + bookingInfo['lastName'],
                     version: QrVersions.auto,
                     size: 120.0,
                   ),
@@ -61,7 +62,7 @@ class FlightTicketScreen extends StatelessWidget {
                         icon: const Icon(Icons.download),
                         label: const Text('تنزيل'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
+                          backgroundColor: Colors.green.shade700,
                         ),
                       ),
                       ElevatedButton.icon(
@@ -73,7 +74,7 @@ class FlightTicketScreen extends StatelessWidget {
                         icon: const Icon(Icons.email),
                         label: const Text('إرسال للإيميل'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
+                          backgroundColor: Colors.orange.shade700,
                         ),
                       ),
                     ],
