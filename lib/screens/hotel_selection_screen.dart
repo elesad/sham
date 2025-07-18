@@ -278,7 +278,9 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
             child: ListTile(
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(hotel['image'], width: 60, height: 60, fit: BoxFit.cover),
+                child: Image.network(hotel['image'], width: 60, height: 60, fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.hotel, size: 40, color: Colors.grey),
+                ),
               ),
               title: Text(hotel['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Column(

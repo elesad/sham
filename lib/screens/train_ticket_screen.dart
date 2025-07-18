@@ -55,29 +55,33 @@ class TrainTicketScreen extends StatelessWidget {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('سيتم تنزيل التذكرة قريباً!')),
-                          );
+                          // TODO: تحميل التذكرة كصورة
                         },
                         icon: const Icon(Icons.download),
-                        label: const Text('تنزيل'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                        ),
+                        label: const Text('تحميل'),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('تم إرسال التذكرة إلى ${bookingInfo['email']}')),
-                          );
+                          // TODO: إرسال التذكرة بالبريد
                         },
                         icon: const Icon(Icons.email),
-                        label: const Text('إرسال للإيميل'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
-                        ),
+                        label: const Text('إرسال'),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    icon: const Icon(Icons.home),
+                    label: const Text('العودة إلى الصفحة الرئيسية'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade700,
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                      textStyle: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
                   ),
                 ],
               ),

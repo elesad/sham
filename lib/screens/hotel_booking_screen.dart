@@ -114,6 +114,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       width: 100,
                       height: 100,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.hotel, size: 80, color: Colors.grey),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -379,6 +380,7 @@ class HotelCard extends StatelessWidget {
               imageUrl,
               height: 160,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.hotel, size: 80, color: Colors.grey),
             ),
           ),
           Padding(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'hotel_selection_screen.dart';
+import 'bus_company_selection_screen.dart';
+import 'flight_company_selection_screen.dart';
+import 'train_company_selection_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -113,7 +116,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _search() {
-    // TODO: أكمل تدفق كل وسيلة نقل حسب المطلوب
     if (selectedTransport == 'hotel') {
       Navigator.push(
         context,
@@ -123,7 +125,76 @@ class _HomePageState extends State<HomePage> {
       );
       return;
     }
-    // باقي التدفقات (الباص، الطيارة، القطار) تضاف هنا
+    if (selectedTransport == 'bus') {
+      if (fromLocation.isEmpty || toLocation.isEmpty || selectedDateLabel.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار جميع الحقول')));
+        return;
+      }
+      DateTime date = selectedDate ?? DateTime.now();
+      if (selectedDateLabel == 'اليوم') {
+        date = DateTime.now();
+      } else if (selectedDateLabel == 'غداً') {
+        date = DateTime.now().add(const Duration(days: 1));
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BusCompanySelectionScreen(
+            fromCity: fromLocation,
+            toCity: toLocation,
+            date: date,
+          ),
+        ),
+      );
+      return;
+    }
+    if (selectedTransport == 'plane') {
+      if (fromLocation.isEmpty || toLocation.isEmpty || selectedDateLabel.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار جميع الحقول')));
+        return;
+      }
+      DateTime date = selectedDate ?? DateTime.now();
+      if (selectedDateLabel == 'اليوم') {
+        date = DateTime.now();
+      } else if (selectedDateLabel == 'غداً') {
+        date = DateTime.now().add(const Duration(days: 1));
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FlightCompanySelectionScreen(
+            fromProvince: fromLocation,
+            toProvince: toLocation,
+            date: date,
+          ),
+        ),
+      );
+      return;
+    }
+    if (selectedTransport == 'train') {
+      if (fromLocation.isEmpty || toLocation.isEmpty || selectedDateLabel.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار جميع الحقول')));
+        return;
+      }
+      DateTime date = selectedDate ?? DateTime.now();
+      if (selectedDateLabel == 'اليوم') {
+        date = DateTime.now();
+      } else if (selectedDateLabel == 'غداً') {
+        date = DateTime.now().add(const Duration(days: 1));
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TrainCompanySelectionScreen(
+            fromProvince: fromLocation,
+            toProvince: toLocation,
+            date: date,
+          ),
+        ),
+      );
+      return;
+    }
+    // باقي التدفقات (الطيارة، القطار) تضاف هنا
   }
 
   @override
@@ -134,7 +205,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // شريط علوي
+            // شريط علوي: زر إشعارات واسم البرنامج
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
@@ -162,7 +233,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            // أزرار الخدمات الأربعة
+            // أزرار الخدمات الأربعة بشكل أفقي
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
