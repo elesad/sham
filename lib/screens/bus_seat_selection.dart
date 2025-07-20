@@ -47,20 +47,88 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
     return Colors.grey[200]!;
   }
 
+  // أرقام المقاعد (1 إلى 40)
+  List<int> seatNumbersFlat() {
+    List<int> numbers = [];
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        numbers.add(row * cols + col + 1);
+      }
+    }
+    return numbers;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // بيانات الرحلة (وهمية أو من widget.company)
+    final price = widget.company.price ?? 25000;
+    final time = widget.company.time ?? '14:30';
+    final duration = '3 ساعات';
+    final companyName = widget.company.name ?? 'شركة الباص';
+    final wifi = true; // خدمة واي فاي متوفرة
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('اختيار المقعد - ${widget.company.name}'),
+        title: Text('اختيار المقعد - $companyName'),
         backgroundColor: const Color(0xFF127C8A),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16),
-          _legend(),
+          // وصف الرحلة
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(companyName, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, size: 18, color: Color(0xFF127C8A)),
+                            const SizedBox(width: 4),
+                            Text(time, style: const TextStyle(fontFamily: 'Cairo', fontSize: 15)),
+                            const SizedBox(width: 12),
+                            const Icon(Icons.timer, size: 18, color: Color(0xFF127C8A)),
+                            const SizedBox(width: 4),
+                            Text(duration, style: const TextStyle(fontFamily: 'Cairo', fontSize: 15)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (wifi) ...[
+                              const Icon(Icons.wifi, size: 18, color: Color(0xFF10B981)),
+                              const SizedBox(width: 4),
+                              const Text('واي فاي', style: TextStyle(fontFamily: 'Cairo', fontSize: 14)),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('$price ل.س', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFFF59E0B))),
+                        const SizedBox(height: 4),
+                        const Text('السعر', style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 10),
           Expanded(
             child: Center(
@@ -113,6 +181,27 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
   Widget _buildSeat(int row, int col) {
     final seat = seats[row][col];
     final isSelected = selectedSeat == seat;
+    final seatNumber = row * cols + col + 1;
+    Color seatColor;
+    Color numberColor;
+    Widget? genderIcon;
+    if (seat.reserved) {
+      seatColor = Colors.green;
+      numberColor = Colors.white;
+      genderIcon = null;
+    } else if (seat.gender == SeatGender.male) {
+      seatColor = const Color(0xFF2563EB); // أزرق غامق
+      numberColor = Colors.white;
+      genderIcon = const Icon(Icons.male, color: Colors.white, size: 16);
+    } else if (seat.gender == SeatGender.female) {
+      seatColor = const Color(0xFFF472B6); // زهري غامق
+      numberColor = Colors.white;
+      genderIcon = const Icon(Icons.female, color: Colors.white, size: 16);
+    } else {
+      seatColor = const Color(0xFFF1F5F9); // رمادي فاتح
+      numberColor = Colors.black;
+      genderIcon = null;
+    }
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: GestureDetector(
@@ -125,45 +214,60 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: _seatColor(seat),
+            color: seatColor,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: isSelected ? Colors.green : Colors.grey[400]!),
             boxShadow: isSelected
                 ? [BoxShadow(color: Colors.green.withOpacity(0.18), blurRadius: 8, offset: const Offset(0, 2))]
                 : [],
           ),
-          child: seat.reserved
-              ? const Icon(Icons.event_seat, color: Colors.white)
-              : seat.gender == null
-                  ? const Icon(Icons.event_seat, color: Color(0xFF127C8A))
-                  : Icon(
-                      seat.gender == SeatGender.male ? Icons.male : Icons.female,
-                      color: Colors.white,
-                    ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (genderIcon != null)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: genderIcon,
+                ),
+              Center(
+                child: Text(
+                  '$seatNumber',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: numberColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // أسطورة الألوان والرموز
   Widget _legend() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _legendItem('متاح', Colors.grey[200]!, Colors.black),
-          const SizedBox(width: 10),
-          _legendItem('رجل', Colors.blue[400]!, Colors.white),
-          const SizedBox(width: 10),
-          _legendItem('امرأة', Colors.pink[300]!, Colors.white),
-          const SizedBox(width: 10),
-          _legendItem('محجوز', Colors.green, Colors.white),
+          _legendItem('فارغ', const Color(0xFFF1F5F9), Colors.black, null),
+          const SizedBox(width: 12),
+          _legendItem('رجل', const Color(0xFF2563EB), Colors.white, const Icon(Icons.male, color: Colors.white, size: 16)),
+          const SizedBox(width: 12),
+          _legendItem('امرأة', const Color(0xFFF472B6), Colors.white, const Icon(Icons.female, color: Colors.white, size: 16)),
+          const SizedBox(width: 12),
+          _legendItem('محجوز', Colors.green, Colors.white, null),
         ],
       ),
     );
   }
 
-  Widget _legendItem(String label, Color color, Color textColor) {
+  Widget _legendItem(String label, Color color, Color textColor, Widget? icon) {
     return Row(
       children: [
         Container(
@@ -174,6 +278,7 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
             borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Colors.grey[400]!),
           ),
+          child: icon != null ? Center(child: icon) : null,
         ),
         const SizedBox(width: 4),
         Text(label, style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: textColor)),

@@ -45,6 +45,11 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   DateTime? _birthDate;
+  String _docType = 'id';
+  String _nationality = 'سوريا';
+  final List<String> _countries = [
+    'سوريا', 'مصر', 'لبنان', 'الأردن', 'العراق', 'تركيا', 'السعودية', 'الإمارات', 'قطر', 'تونس', 'المغرب', 'الجزائر', 'اليمن', 'فلسطين', 'ليبيا', 'السودان', 'دولة أخرى'
+  ];
 
   Future<void> _selectBirthDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -189,44 +194,109 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'الاسم الكامل',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال الاسم' : null,
+                  // الجنسية واختيار البلد إذا لم يكن سوري
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _nationality,
+                          decoration: const InputDecoration(
+                            labelText: 'الجنسية',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: _countries.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                          onChanged: (val) => setState(() => _nationality = val ?? 'سوريا'),
+                        ),
+                      ),
+                      if (_nationality != 'سوريا')
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Icon(Icons.flag, color: Colors.purple.shade700),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'البريد الإلكتروني',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال البريد الإلكتروني' : null,
+                  // الاسم الكامل مقابل رقم الهوية/الجواز
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'الاسم الكامل',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال الاسم' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: DropdownButtonFormField<String>(
+                                value: _docType,
+                                decoration: const InputDecoration(
+                                  labelText: 'نوع الوثيقة',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'id', child: Text('هوية')),
+                                  DropdownMenuItem(value: 'passport', child: Text('جواز سفر')),
+                                ],
+                                onChanged: (val) => setState(() => _docType = val ?? 'id'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 3,
+                              child: TextFormField(
+                                controller: _idController,
+                                decoration: InputDecoration(
+                                  labelText: _docType == 'id' ? 'رقم الهوية' : 'رقم الجواز',
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: const Icon(Icons.arrow_drop_down),
+                                ),
+                                validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الوثيقة' : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'رقم الهاتف',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الهاتف' : null,
+                  // البريد مقابل الهاتف
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'البريد الإلكتروني',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال البريد الإلكتروني' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _phoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'رقم الهاتف',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.phone,
+                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الهاتف' : null,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _idController,
-                    decoration: const InputDecoration(
-                      labelText: 'رقم الهوية أو جواز السفر',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الهوية أو الجواز' : null,
-                  ),
-                  const SizedBox(height: 12),
+                  // تاريخ الميلاد
                   GestureDetector(
                     onTap: () => _selectBirthDate(context),
                     child: AbsorbPointer(
@@ -234,27 +304,31 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         decoration: const InputDecoration(
                           labelText: 'تاريخ الميلاد',
                           border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.cake),
+                          suffixIcon: Icon(Icons.calendar_today),
                         ),
                         controller: TextEditingController(
-                          text: _birthDate == null ? '' : DateFormat('yyyy/MM/dd').format(_birthDate!),
+                          text: _birthDate == null ? '' : '${_birthDate!.year}/${_birthDate!.month}/${_birthDate!.day}',
                         ),
-                        validator: (value) => _birthDate == null ? 'الرجاء اختيار تاريخ الميلاد' : null,
+                        validator: (_) {
+                          if (_birthDate == null) return 'يرجى اختيار تاريخ الميلاد';
+                          return null;
+                        },
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 18),
                   ElevatedButton(
                     onPressed: _onConfirmBooking,
-                    child: const Text('تأكيد الحجز'),
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple.shade700,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
+                    child: const Text('تأكيد الحجز', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ],
               ),
-                                    ),
+            ),
                                   ],
                                 ),
                               ),
