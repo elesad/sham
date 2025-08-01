@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/favorites_provider.dart';
 import 'hotel_booking_screen.dart';
+import 'hotel_details_screen.dart';
 
 class HotelSelectionScreen extends StatefulWidget {
   const HotelSelectionScreen({Key? key}) : super(key: key);
@@ -14,12 +15,19 @@ class HotelSelectionScreen extends StatefulWidget {
 class _HotelSelectionScreenState extends State<HotelSelectionScreen> {
   final List<String> _cities = [
     'دمشق',
+    'ريف دمشق',
     'حلب',
     'حمص',
+    'حماة',
     'اللاذقية',
     'طرطوس',
-    'حماة',
+    'إدلب',
+    'درعا',
+    'السويداء',
+    'القنيطرة',
     'دير الزور',
+    'الحسكة',
+    'الرقة',
   ];
   String? _selectedCity;
   DateTime? _checkInDate;
@@ -111,7 +119,7 @@ class _HotelSelectionScreenState extends State<HotelSelectionScreen> {
         title: const Text(
           'البحث عن فندق',
           style: TextStyle(
-            fontFamily: 'Cairo',
+            fontFamily: 'Cairo, Arial, sans-serif',
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -351,7 +359,7 @@ class _HotelSelectionScreenState extends State<HotelSelectionScreen> {
                 label: const Text(
                   'بحث عن فنادق',
                   style: TextStyle(
-                    fontFamily: 'Cairo',
+                    fontFamily: 'Cairo, Arial, sans-serif',
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -407,7 +415,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> with TickerProv
     hotels = List.generate(4, (i) => {
       'id': 'hotel_${i+1}',
       'name': '${widget.city} هوتيل ${i+1}',
-      'image': 'https://source.unsplash.com/400x30${i}/?hotel,${widget.city}',
+      'image': 'https://picsum.photos/400/30${i}?random=${i+1}',
       'location': widget.city,
       'rating': 4.0 + (i % 2) * 0.5,
       'price': 50000 + i * 8000,
@@ -482,8 +490,9 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> with TickerProv
         title: Text(
           'فنادق ${widget.city}',
           style: const TextStyle(
-            fontFamily: 'Cairo',
+            fontFamily: 'Cairo, Arial, sans-serif',
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
@@ -551,121 +560,164 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> with TickerProv
               builder: (context, favoritesProvider, child) {
                 final isFavorite = favoritesProvider.isFavorite(hotel['id']);
                 
-                return Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark 
-                          ? Colors.black.withOpacity(0.3)
-                          : Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // صورة الفندق
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            hotel['image'],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
+                return GestureDetector(
+                  onTap: () => _showHotelDetails(hotel),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark 
+                            ? Colors.black.withOpacity(0.3)
+                            : Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          // صورة الفندق
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              hotel['image'],
                               width: 80,
                               height: 80,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF404040) : Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.hotel,
-                                size: 40,
-                                color: isDark ? Colors.white70 : Colors.grey[600],
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF404040) : Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                            : null,
+                                        color: const Color(0xFF8B5CF6),
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF404040) : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.hotel,
+                                  size: 40,
+                                  color: isDark ? Colors.white70 : Colors.grey[600],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        // معلومات الفندق
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                hotel['name'],
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                  fontFamily: 'Cairo',
+                          const SizedBox(width: 16),
+                          // معلومات الفندق
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  hotel['name'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white : Colors.black87,
+                                    fontFamily: 'Cairo, Arial, sans-serif',
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 16,
-                                  ),
-                                  Text(
-                                    hotel['rating'].toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 16,
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Icon(
-                                    Icons.attach_money,
-                                    size: 16,
-                                    color: const Color(0xFF8B5CF6),
-                                  ),
-                                  Text(
-                                    '${hotel['price']} ل.س',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Color(0xFF8B5CF6),
+                                    Text(
+                                      hotel['rating'].toString(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: isDark ? Colors.white : Colors.black87,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                hotel['features'],
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark ? Colors.white70 : Colors.grey[600],
-                                  fontFamily: 'Cairo',
+                                    const SizedBox(width: 12),
+                                    Icon(
+                                      Icons.attach_money,
+                                      size: 16,
+                                      color: const Color(0xFF8B5CF6),
+                                    ),
+                                    Text(
+                                      '${hotel['price']} ل.س',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: Color(0xFF8B5CF6),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  hotel['features'],
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white70 : Colors.grey[600],
+                                    fontFamily: 'Cairo, Arial, sans-serif',
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        // زر القلب
-                        IconButton(
-                          icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.red,
-                            size: 28,
+                          // زر القلب
+                          IconButton(
+                            icon: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                              size: 28,
+                            ),
+                            onPressed: () => _toggleFavorite(hotel),
                           ),
-                          onPressed: () => _toggleFavorite(hotel),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
               },
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _showHotelDetails(Map<String, dynamic> hotel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotelDetailsScreen(
+          hotel: hotel,
+          checkInDate: widget.checkInDate,
+          checkOutDate: widget.checkOutDate,
+          rooms: widget.rooms,
+          guests: widget.guests,
         ),
       ),
     );

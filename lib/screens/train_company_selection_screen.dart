@@ -207,7 +207,7 @@ class _TrainCompanySelectionScreenState extends State<TrainCompanySelectionScree
                     ),
                   ],
                 ),
-                child: Column(
+        child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -231,10 +231,10 @@ class _TrainCompanySelectionScreenState extends State<TrainCompanySelectionScree
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                                         const Text(
                                           'من',
                                           style: TextStyle(
@@ -487,8 +487,8 @@ class _TrainCompanySelectionScreenState extends State<TrainCompanySelectionScree
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                                     Text(
                                       'رحلة رقم ${trainTrip['tripNumber']}',
                                       style: TextStyle(
@@ -535,17 +535,17 @@ class _TrainCompanySelectionScreenState extends State<TrainCompanySelectionScree
                                   const SizedBox(height: 8),
                                   ElevatedButton(
                                     onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => TrainSeatSelectionScreen(
-                                            companyName: trainTrip['companyName'],
-                                            fromProvince: widget.fromProvince,
-                                            toProvince: widget.toProvince,
-                                            date: widget.date,
-                                            tripNumber: trainTrip['tripNumber'],
-                                            tripTime: trainTrip['time'],
-                                            price: trainTrip['price'],
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TrainSeatSelectionScreen(
+                        companyName: trainTrip['companyName'],
+                        fromProvince: widget.fromProvince,
+                        toProvince: widget.toProvince,
+                        date: widget.date,
+                        tripNumber: trainTrip['tripNumber'],
+                        tripTime: trainTrip['time'],
+                        price: trainTrip['price'],
                                           ),
                                         ),
                                       );

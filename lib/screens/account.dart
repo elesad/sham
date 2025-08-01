@@ -55,11 +55,12 @@ class _AccountScreenState extends State<AccountScreen> {
               
               // Title
               Text(
-                AppLocalizations.of(context)!.welcomeToSham,
+                'أهلاً بك في شام',
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1E3A8A),
+                  fontFamily: 'Cairo',
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -67,10 +68,11 @@ class _AccountScreenState extends State<AccountScreen> {
               
               // Subtitle
               Text(
-                AppLocalizations.of(context)!.loginToAccess,
+                'سجل دخولك للوصول إلى جميع الخدمات',
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+                  fontSize: 16,
+                  color: Color(0xFF6B7280),
+                  fontFamily: 'Cairo',
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -80,9 +82,10 @@ class _AccountScreenState extends State<AccountScreen> {
               const Text(
                 'تسجيل الدخول عبر',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey,
+                  color: Color(0xFF374151),
+                  fontFamily: 'Cairo',
                 ),
               ),
               const SizedBox(height: 16),
@@ -124,10 +127,11 @@ class _AccountScreenState extends State<AccountScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      AppLocalizations.of(context)!.or,
+                      'أو',
                       style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                        fontSize: 14,
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -140,9 +144,10 @@ class _AccountScreenState extends State<AccountScreen> {
               const Text(
                 'إنشاء حساب جديد',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey,
+                  color: Color(0xFF374151),
+                  fontFamily: 'Cairo',
                 ),
               ),
               const SizedBox(height: 12),
@@ -177,10 +182,11 @@ class _AccountScreenState extends State<AccountScreen> {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  AppLocalizations.of(context)!.cancel,
+                  'إلغاء',
                   style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    fontSize: 16,
+                    fontFamily: 'Cairo',
                   ),
                 ),
               ),
@@ -207,8 +213,9 @@ class _AccountScreenState extends State<AccountScreen> {
           title,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Cairo',
             inherit: false,
           ),
         ),
@@ -252,11 +259,12 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.createAccountTitle,
+              'إنشاء حساب جديد',
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1E3A8A),
+                fontFamily: 'Cairo',
               ),
               textAlign: TextAlign.center,
             ),
@@ -269,8 +277,9 @@ class _AccountScreenState extends State<AccountScreen> {
               const Text(
                 'أدخل بياناتك الشخصية',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+                  fontSize: 16,
+                  color: Color(0xFF6B7280),
+                  fontFamily: 'Cairo',
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -945,4 +954,4 @@ class _AccountScreenState extends State<AccountScreen> {
       ],
     );
   }
-} 
+}

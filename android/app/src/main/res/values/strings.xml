@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">شام</string>
+    <string name="app_description">تطبيق السفر والحجز</string>
+    <string name="welcome_message">أهلاً بك في شام</string>
+    <string name="login_message">سجل دخولك للوصول إلى جميع الخدمات</string>
+</resources> 

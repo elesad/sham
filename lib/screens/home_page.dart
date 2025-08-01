@@ -384,8 +384,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -428,8 +429,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   size: 24,
                                 ),
                               ),
-                              const Text(
-                                'مواصلات الشام',
+                              Text(
+                                'شام',
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontWeight: FontWeight.bold,
@@ -456,8 +457,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           const SizedBox(height: 20),
                           
                           // Welcome Text
-                          const Text(
-                            'أهلاً بك في مواصلات الشام',
+                          Text(
+                            'أهلاً بك في شام',
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 18,
@@ -465,7 +466,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          const Text(
+                          Text(
                             'اختر وسيلة النقل المفضلة لديك',
                             style: TextStyle(
                               fontFamily: 'Cairo',
@@ -613,7 +614,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                   fontWeight: FontWeight.w500,
                                                   color: selectedDateLabel != 'اليوم' && selectedDateLabel != 'غداً'
                                                       ? Colors.white
-                                                      : Colors.grey[600],
+                                                      : (isDark ? Colors.white70 : Colors.grey[600]),
                                                 ),
                                               ),
                                             ],
@@ -682,6 +683,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _transportButton(String type, String label, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedTransport == type;
     return GestureDetector(
       onTap: () => _changeTransportType(type),
@@ -731,7 +733,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       fontFamily: 'Cairo',
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? color : Colors.grey[700],
+                      color: isSelected ? color : (isDark ? Colors.white70 : Colors.grey[700]),
                     ),
                   ),
                 ],
@@ -744,6 +746,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _locationField(String label, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
@@ -768,8 +771,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               style: TextStyle(
                 fontFamily: 'Cairo',
                 color: label.contains('من أين') || label.contains('إلى أين')
-                    ? Colors.grey[500]
-                    : Colors.black,
+                    ? (isDark ? Colors.white70 : Colors.grey[500])
+                    : (isDark ? Colors.white : Colors.black),
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
@@ -781,6 +784,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _dateOption(String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedDateLabel == label;
     return Expanded(
       child: GestureDetector(
@@ -801,7 +805,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               fontFamily: 'Cairo',
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.grey[600]),
             ),
             textAlign: TextAlign.center,
           ),

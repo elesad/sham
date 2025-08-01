@@ -219,7 +219,7 @@ class _FlightCompanySelectionScreenState extends State<FlightCompanySelectionScr
                     ),
                   ],
                 ),
-                child: Column(
+        child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,9 +243,9 @@ class _FlightCompanySelectionScreenState extends State<FlightCompanySelectionScr
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         const Text(
                                           'من',
@@ -502,8 +502,8 @@ class _FlightCompanySelectionScreenState extends State<FlightCompanySelectionScr
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                                         Text(
                                           'رحلة رقم ${flight['flightNumber']}',
                                           style: TextStyle(
@@ -550,20 +550,20 @@ class _FlightCompanySelectionScreenState extends State<FlightCompanySelectionScr
                                       const SizedBox(height: 8),
                                       ElevatedButton(
                                         onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                                                             builder: (context) => FlightBookingInfoScreen(
-                                                 fromProvince: widget.fromProvince,
-                                                 toProvince: widget.toProvince,
-                                                 date: widget.date,
-                                                 flightNumber: flight['flightNumber'],
-                                                 flightTime: flight['time'],
-                                                 price: flight['price'],
-                                               ),
-                                            ),
-                                          );
-                                        },
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FlightBookingInfoScreen(
+                              fromProvince: widget.fromProvince,
+                              toProvince: widget.toProvince,
+                              date: widget.date,
+                              flightNumber: flight['flightNumber'],
+                              flightTime: flight['time'],
+                              price: flight['price'],
+                            ),
+                          ),
+                        );
+                      },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: const Color(0xFFF59E0B),
                                           foregroundColor: Colors.white,

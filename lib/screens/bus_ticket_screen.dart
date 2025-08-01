@@ -5,9 +5,23 @@ import '../models/bus_booking_info.dart';
 import '../models/app_state.dart';
 import '../screens/my_trips.dart';
 
-class BusTicketScreen extends StatelessWidget {
+class BusTicketScreen extends StatefulWidget {
   final BusBookingInfo bookingInfo;
   const BusTicketScreen({Key? key, required this.bookingInfo}) : super(key: key);
+
+  @override
+  State<BusTicketScreen> createState() => _BusTicketScreenState();
+}
+
+class _BusTicketScreenState extends State<BusTicketScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // حفظ التذكرة تلقائياً عند إنشاء الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _saveToMyTrips();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +96,7 @@ class BusTicketScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                bookingInfo.companyName,
+                                widget.bookingInfo.companyName,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white70,
@@ -148,7 +162,7 @@ class BusTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'من',
-                            bookingInfo.fromCity,
+                            widget.bookingInfo.fromCity,
                             Icons.location_on,
                           ),
                         ),
@@ -167,7 +181,7 @@ class BusTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'إلى',
-                            bookingInfo.toCity,
+                            widget.bookingInfo.toCity,
                             Icons.location_on,
                           ),
                         ),
@@ -179,21 +193,21 @@ class BusTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'التاريخ',
-                            bookingInfo.tripDate,
+                            widget.bookingInfo.tripDate,
                             Icons.calendar_today,
                           ),
                         ),
                         Expanded(
                           child: _buildDetailItem(
                             'الوقت',
-                            bookingInfo.tripTime,
+                            widget.bookingInfo.tripTime,
                             Icons.access_time,
                           ),
                         ),
                         Expanded(
                           child: _buildDetailItem(
                             'المقعد',
-                            bookingInfo.seatNumber,
+                            widget.bookingInfo.seatNumber,
                             Icons.event_seat,
                           ),
                         ),
@@ -248,24 +262,24 @@ class BusTicketScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _buildPassengerInfoItem(Icons.person, 'الاسم', bookingInfo.firstName + ' ' + bookingInfo.lastName),
-                    const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.phone, 'رقم الهاتف', bookingInfo.phone),
-                    const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.email, 'البريد الإلكتروني', bookingInfo.email),
-                    const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.badge, 'رقم الهوية/الجواز', bookingInfo.idNumber),
+                                                _buildPassengerInfoItem(Icons.person, 'الاسم', widget.bookingInfo.firstName + ' ' + widget.bookingInfo.lastName),
+                            const SizedBox(height: 16),
+                            _buildPassengerInfoItem(Icons.phone, 'رقم الهاتف', widget.bookingInfo.phone),
+                            const SizedBox(height: 16),
+                            _buildPassengerInfoItem(Icons.email, 'البريد الإلكتروني', widget.bookingInfo.email),
+                            const SizedBox(height: 16),
+                            _buildPassengerInfoItem(Icons.badge, 'رقم الهوية/الجواز', widget.bookingInfo.idNumber),
                     const SizedBox(height: 16),
                     _buildPassengerInfoItem(
                       Icons.cake,
                       'تاريخ الميلاد',
-                      '${bookingInfo.birthDate.year}/${bookingInfo.birthDate.month}/${bookingInfo.birthDate.day}',
+                      '${widget.bookingInfo.birthDate.year}/${widget.bookingInfo.birthDate.month}/${widget.bookingInfo.birthDate.day}',
                     ),
                     const SizedBox(height: 16),
                     _buildPassengerInfoItem(
                       Icons.payment,
                       'طريقة الدفع',
-                      bookingInfo.paymentMethod == 'visa' ? 'Visa' : 'الدفع عند الصعود',
+                      widget.bookingInfo.paymentMethod == 'visa' ? 'Visa' : 'الدفع عند الصعود',
                     ),
                   ],
                 ),
@@ -296,7 +310,7 @@ class BusTicketScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: QrImageView(
-                        data: bookingInfo.bookingId.isNotEmpty ? bookingInfo.bookingId : bookingInfo.idNumber,
+                        data: widget.bookingInfo.bookingId.isNotEmpty ? widget.bookingInfo.bookingId : widget.bookingInfo.idNumber,
                         version: QrVersions.auto,
                         size: 150,
                         backgroundColor: Colors.white,
@@ -304,7 +318,7 @@ class BusTicketScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'رقم الحجز: ${bookingInfo.bookingId.isNotEmpty ? bookingInfo.bookingId : 'غير متوفر'}',
+                      'رقم الحجز: ${widget.bookingInfo.bookingId.isNotEmpty ? widget.bookingInfo.bookingId : 'غير متوفر'}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -351,7 +365,7 @@ class BusTicketScreen extends StatelessWidget {
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('تم إرسال التذكرة إلى ${bookingInfo.email}'),
+                            content: Text('تم إرسال التذكرة إلى ${widget.bookingInfo.email}'),
                             backgroundColor: const Color(0xFF127C8A),
                           ),
                         );
@@ -381,7 +395,7 @@ class BusTicketScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    _saveToMyTrips(context);
+                    _saveToMyTrips();
                   },
                   icon: const Icon(Icons.save, size: 24),
                   label: const Text(
@@ -510,20 +524,20 @@ class BusTicketScreen extends StatelessWidget {
     );
   }
 
-  void _saveToMyTrips(BuildContext context) {
+  void _saveToMyTrips() {
     final myTripsProvider = Provider.of<MyTripsProvider>(context, listen: false);
     
     final trip = Trip(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: TripType.bus,
-      from: bookingInfo.fromCity,
-      to: bookingInfo.toCity,
+      from: widget.bookingInfo.fromCity,
+      to: widget.bookingInfo.toCity,
       date: DateTime.now(),
       time: '${DateTime.now().hour}:${DateTime.now().minute}',
-      company: bookingInfo.companyName,
+      company: widget.bookingInfo.companyName,
       status: TripStatus.confirmed,
       price: 25000.0, // سعر افتراضي
-      seatNumber: bookingInfo.seatNumber,
+      seatNumber: widget.bookingInfo.seatNumber,
       ticketNumber: 'BUS${DateTime.now().millisecondsSinceEpoch}',
     );
     

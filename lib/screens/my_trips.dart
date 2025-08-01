@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_state.dart';
 import '../models/favorites_provider.dart';
+import '../models/bus_booking_info.dart';
+import '../models/train_models.dart';
+import '../models/flight_models.dart';
+import '../models/hotel_models.dart';
+import 'bus_ticket_screen.dart';
+import 'train_ticket_screen.dart';
+import 'flight_ticket_screen.dart';
+import 'hotel_ticket_screen.dart';
 
 class MyTripsScreen extends StatefulWidget {
   const MyTripsScreen({super.key});
@@ -42,37 +50,37 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         ],
       ),
       body: Column(
-        children: [
+                  children: [
           // شريط الفلترة العلوي
-          Container(
+            Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFF127C8A),
             ),
-            child: SingleChildScrollView(
+              child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
+                        child: Row(
+                          children: [
                   _buildFilterChip('الكل', null, isDark),
                   const SizedBox(width: 8),
                   _buildFilterChip('باص', TripType.bus, isDark),
-                  const SizedBox(width: 8),
+                            const SizedBox(width: 8),
                   _buildFilterChip('قطار', TripType.train, isDark),
-                  const SizedBox(width: 8),
+                const SizedBox(width: 8),
                   _buildFilterChip('فندق', TripType.hotel, isDark),
-                  const SizedBox(width: 8),
+                                        const SizedBox(width: 8),
                   _buildFilterChip('طائرة', TripType.flight, isDark),
-                ],
-              ),
+                                      ],
+                                    ),
             ),
           ),
           // قائمة الرحلات
-          Expanded(
+              Expanded(
             child: trips.isEmpty
                 ? _buildEmptyState(isDark)
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
                     itemCount: trips.length,
                     itemBuilder: (context, index) {
                       final trip = trips[index];
@@ -87,6 +95,12 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
   Widget _buildFilterChip(String label, TripType? type, bool isDark) {
     final isSelected = selectedType == type;
+    Color chipColor = Colors.white;
+    
+    if (type != null) {
+      chipColor = _tripTypeColor(type);
+    }
+    
     return FilterChip(
       label: Text(
         label,
@@ -98,7 +112,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         ),
       ),
       selected: isSelected,
-      selectedColor: _tripTypeColor(type ?? TripType.bus),
+      selectedColor: chipColor,
       backgroundColor: isDark ? const Color(0xFF404040) : Colors.white.withOpacity(0.2),
       onSelected: (_) => setState(() => selectedType = type),
     );
@@ -106,69 +120,69 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
   Widget _buildTripCard(Trip trip, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 18),
+                        margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: isDark 
               ? Colors.black.withOpacity(0.3)
               : Colors.black.withOpacity(0.07),
-            blurRadius: 12,
+                              blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // أيقونة نوع الرحلة
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _tripTypeColor(trip.type).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                              // أيقونة نوع الرحلة
+                                  Container(
+                                width: 50,
+                                height: 50,
+                                    decoration: BoxDecoration(
+                                  color: _tripTypeColor(trip.type).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Center(
                     child: Icon(
                       _tripTypeIcon(trip.type),
                       color: _tripTypeColor(trip.type),
                       size: 26,
                     ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // معلومات الرحلة
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        trip.company,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                              // معلومات الرحلة
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                      trip.company,
                         style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
+                                            fontFamily: 'Cairo',
+                                        fontSize: 17,
+                                            fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _tripTypeLabel(trip.type),
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 12,
-                          color: _tripTypeColor(trip.type),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                      _tripTypeLabel(trip.type),
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 12,
+                                        color: _tripTypeColor(trip.type),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -188,30 +202,30 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
+                                        const SizedBox(height: 4),
+                                    Row(
+                                children: [
                           Icon(
                             Icons.access_time,
                             size: 14,
                             color: isDark ? Colors.white70 : Colors.grey[600],
                           ),
-                          const SizedBox(width: 4),
-                          Text(
+                                        const SizedBox(width: 4),
+                                  Text(
                             trip.time,
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 12,
                               color: isDark ? Colors.white70 : Colors.grey[600],
                             ),
-                          ),
-                          const SizedBox(width: 12),
+                    ),
+                    const SizedBox(width: 12),
                           Icon(
                             Icons.attach_money,
                             size: 14,
                             color: isDark ? Colors.white70 : Colors.grey[600],
                           ),
-                          const SizedBox(width: 4),
+                                        const SizedBox(width: 4),
                           Text(
                             '${trip.price.toInt()} ل.س',
                             style: TextStyle(
@@ -220,15 +234,15 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                               color: const Color(0xFF127C8A),
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                                        ),
+                                      ],
+                    ),
+                  ],
                 ),
-                // زر القلب
-                IconButton(
-                  onPressed: () {
+              ),
+                              // زر القلب
+                  IconButton(
+                    onPressed: () {
                     // إضافة للمفضلة
                     _addToFavorites(trip);
                   },
@@ -311,11 +325,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                   ),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
+                              ),
+                            ],
+                              ),
+                            ),
+                          );
   }
 
   Widget _buildEmptyState(bool isDark) {
@@ -402,13 +416,13 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
   Color _tripTypeColor(TripType type) {
     switch (type) {
       case TripType.bus:
-        return const Color(0xFF2563EB); // أزرق غامق للباص
+        return const Color(0xFF127C8A);
       case TripType.train:
-        return const Color(0xFF059669); // أخضر غامق للقطار
+        return const Color(0xFF10B981);
       case TripType.hotel:
-        return const Color(0xFF7C3AED); // بنفسجي غامق للفندق
+        return const Color(0xFF8B5CF6);
       case TripType.flight:
-        return const Color(0xFFDC2626); // أحمر للطائرة
+        return const Color(0xFFF59E0B);
     }
   }
 
@@ -513,10 +527,112 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
   }
 
   void _viewTicket(Trip trip) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('عرض تذكرة ${trip.company}'),
-        backgroundColor: const Color(0xFF127C8A),
+    switch (trip.type) {
+      case TripType.bus:
+        _showBusTicket(trip);
+        break;
+      case TripType.train:
+        _showTrainTicket(trip);
+        break;
+      case TripType.flight:
+        _showFlightTicket(trip);
+        break;
+      case TripType.hotel:
+        _showHotelTicket(trip);
+        break;
+    }
+  }
+
+  void _showBusTicket(Trip trip) {
+    final bookingInfo = BusBookingInfo(
+      email: 'passenger@example.com',
+      phone: '09xxxxxxxx',
+      firstName: 'اسم',
+      lastName: 'المسافر',
+      idNumber: '123456789',
+      birthDate: DateTime(1990),
+      paymentMethod: 'بطاقة ائتمان',
+      companyName: trip.company,
+      seatNumber: trip.seatNumber,
+      tripDate: '${trip.date.day}/${trip.date.month}/${trip.date.year}',
+      tripTime: trip.time,
+      bookingId: trip.ticketNumber,
+      fromCity: trip.from,
+      toCity: trip.to,
+    );
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BusTicketScreen(bookingInfo: bookingInfo),
+      ),
+    );
+  }
+
+  void _showTrainTicket(Trip trip) {
+    // إنشاء بيانات بسيطة للقطار
+    final bookingData = {
+      'from': trip.from,
+      'to': trip.to,
+      'date': trip.date,
+      'time': trip.time,
+      'company': trip.company,
+      'seatNumber': trip.seatNumber,
+      'ticketNumber': trip.ticketNumber,
+      'price': trip.price,
+    };
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TrainTicketScreen(bookingInfo: bookingData),
+      ),
+    );
+  }
+
+  void _showFlightTicket(Trip trip) {
+    // إنشاء بيانات بسيطة للطائرة
+    final bookingData = {
+      'from': trip.from,
+      'to': trip.to,
+      'date': trip.date,
+      'time': trip.time,
+      'company': trip.company,
+      'seatNumber': trip.seatNumber,
+      'ticketNumber': trip.ticketNumber,
+      'price': trip.price,
+    };
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightTicketScreen(bookingInfo: bookingData),
+      ),
+    );
+  }
+
+  void _showHotelTicket(Trip trip) {
+    final bookingData = {
+      'hotelName': trip.company,
+      'hotelImage': 'https://source.unsplash.com/400x300/?hotel,${trip.to}',
+      'location': trip.to,
+      'rating': 4.5,
+      'price': trip.price.toInt(),
+      'checkInDate': trip.date,
+      'checkOutDate': trip.date.add(const Duration(days: 1)),
+      'rooms': 1,
+      'guests': 2,
+      'name': 'اسم المسافر',
+      'email': 'email@example.com',
+      'phone': '09xxxxxxxx',
+      'id': '123456789',
+      'birthDate': DateTime(1990),
+    };
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotelTicketScreen(bookingData: bookingData),
       ),
     );
   }

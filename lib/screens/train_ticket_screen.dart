@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
+import '../screens/my_trips.dart';
 
-class TrainTicketScreen extends StatelessWidget {
+class TrainTicketScreen extends StatefulWidget {
   final Map<String, dynamic> bookingInfo;
   const TrainTicketScreen({Key? key, required this.bookingInfo}) : super(key: key);
+
+  @override
+  State<TrainTicketScreen> createState() => _TrainTicketScreenState();
+}
+
+class _TrainTicketScreenState extends State<TrainTicketScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _saveToMyTrips();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +94,7 @@ class TrainTicketScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                bookingInfo['tripNumber'] ?? '',
+                                widget.bookingInfo['tripNumber'] ?? '',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white70,
@@ -144,7 +160,7 @@ class TrainTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'من',
-                            bookingInfo['fromProvince'] ?? '',
+                            widget.bookingInfo['fromProvince'] ?? '',
                             Icons.location_on,
                           ),
                         ),
@@ -163,7 +179,7 @@ class TrainTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'إلى',
-                            bookingInfo['toProvince'] ?? '',
+                            widget.bookingInfo['toProvince'] ?? '',
                             Icons.location_on,
                           ),
                         ),
@@ -175,21 +191,21 @@ class TrainTicketScreen extends StatelessWidget {
                         Expanded(
                           child: _buildDetailItem(
                             'التاريخ',
-                            '${bookingInfo['date'].day}/${bookingInfo['date'].month}/${bookingInfo['date'].year}',
+                            '${widget.bookingInfo['date'].day}/${widget.bookingInfo['date'].month}/${widget.bookingInfo['date'].year}',
                             Icons.calendar_today,
                           ),
                         ),
                         Expanded(
                           child: _buildDetailItem(
                             'الوقت',
-                            bookingInfo['tripTime'] ?? '',
+                            widget.bookingInfo['tripTime'] ?? '',
                             Icons.access_time,
                           ),
                         ),
                         Expanded(
                           child: _buildDetailItem(
                             'المقعد',
-                            bookingInfo['seatNumber'] ?? '',
+                            widget.bookingInfo['seatNumber'] ?? '',
                             Icons.event_seat,
                           ),
                         ),
@@ -198,7 +214,7 @@ class TrainTicketScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildDetailItem(
                       'السعر',
-                      '${bookingInfo['price']} ل.س',
+                      '${widget.bookingInfo['price']} ل.س',
                       Icons.attach_money,
                     ),
                   ],
@@ -250,20 +266,20 @@ class TrainTicketScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _buildPassengerInfoItem(Icons.person, 'الاسم', bookingInfo['firstName'] + ' ' + bookingInfo['lastName']),
+                    _buildPassengerInfoItem(Icons.person, 'الاسم', widget.bookingInfo['firstName'] + ' ' + widget.bookingInfo['lastName']),
                     const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.phone, 'رقم الهاتف', bookingInfo['phone'] ?? ''),
+                    _buildPassengerInfoItem(Icons.phone, 'رقم الهاتف', widget.bookingInfo['phone'] ?? ''),
                     const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.email, 'البريد الإلكتروني', bookingInfo['email'] ?? ''),
+                    _buildPassengerInfoItem(Icons.email, 'البريد الإلكتروني', widget.bookingInfo['email'] ?? ''),
                     const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.badge, 'رقم الهوية/الجواز', bookingInfo['idNumber'] ?? ''),
+                    _buildPassengerInfoItem(Icons.badge, 'رقم الهوية/الجواز', widget.bookingInfo['idNumber'] ?? ''),
                     const SizedBox(height: 16),
-                    _buildPassengerInfoItem(Icons.cake, 'تاريخ الميلاد', bookingInfo['birthDate'] ?? ''),
+                    _buildPassengerInfoItem(Icons.cake, 'تاريخ الميلاد', widget.bookingInfo['birthDate'] ?? ''),
                     const SizedBox(height: 16),
                     _buildPassengerInfoItem(
                       Icons.payment,
                       'طريقة الدفع',
-                      bookingInfo['paymentMethod'] == 'visa' ? 'Visa' : 'الدفع عند الصعود',
+                      widget.bookingInfo['paymentMethod'] == 'visa' ? 'Visa' : 'الدفع عند الصعود',
                     ),
                   ],
                 ),
@@ -294,7 +310,7 @@ class TrainTicketScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: QrImageView(
-                        data: bookingInfo['tripNumber'] + bookingInfo['firstName'] + bookingInfo['lastName'],
+                        data: widget.bookingInfo['tripNumber'] + widget.bookingInfo['firstName'] + widget.bookingInfo['lastName'],
                         version: QrVersions.auto,
                         size: 150,
                         backgroundColor: Colors.white,
@@ -302,7 +318,7 @@ class TrainTicketScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'رقم الرحلة: ${bookingInfo['tripNumber'] ?? ''}',
+                      'رقم الرحلة: ${widget.bookingInfo['tripNumber'] ?? ''}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -374,6 +390,30 @@ class TrainTicketScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Save to My Trips Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _saveToMyTrips();
+                  },
+                  icon: const Icon(Icons.save, size: 24),
+                  label: const Text(
+                    'حفظ في رحلاتي',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               // Home Button
               SizedBox(
                 width: double.infinity,
@@ -480,6 +520,35 @@ class TrainTicketScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _saveToMyTrips() {
+    final myTripsProvider = Provider.of<MyTripsProvider>(context, listen: false);
+    
+    final trip = Trip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: TripType.train,
+      from: widget.bookingInfo['fromCity'] ?? '',
+      to: widget.bookingInfo['toCity'] ?? '',
+      date: DateTime.now(),
+      time: '${DateTime.now().hour}:${DateTime.now().minute}',
+      company: widget.bookingInfo['companyName'] ?? '',
+      status: TripStatus.confirmed,
+      price: 30000.0, // سعر افتراضي
+      seatNumber: widget.bookingInfo['seatNumber'] ?? '',
+      ticketNumber: 'TRAIN${DateTime.now().millisecondsSinceEpoch}',
+    );
+    
+    myTripsProvider.addTrip(trip);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('تم حفظ التذكرة في رحلاتي'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 } 

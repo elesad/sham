@@ -58,7 +58,7 @@ class _ShamAppState extends State<ShamApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'مواصلات الشام',
+      title: 'شام',
       locale: _locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

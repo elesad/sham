@@ -1,28 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../models/app_state.dart';
+import '../screens/my_trips.dart';
 
-class HotelTicketScreen extends StatelessWidget {
+class HotelTicketScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
   const HotelTicketScreen({Key? key, required this.bookingData}) : super(key: key);
 
   @override
+  State<HotelTicketScreen> createState() => _HotelTicketScreenState();
+}
+
+class _HotelTicketScreenState extends State<HotelTicketScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _saveToMyTrips();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final hotelName = bookingData['hotelName'] ?? '';
-    final hotelImage = bookingData['hotelImage'] ?? '';
-    final location = bookingData['location'] ?? '';
-    final rating = bookingData['rating']?.toString() ?? '';
-    final price = bookingData['price']?.toString() ?? '';
-    final checkInDate = bookingData['checkInDate'] as DateTime?;
-    final checkOutDate = bookingData['checkOutDate'] as DateTime?;
-    final rooms = bookingData['rooms']?.toString() ?? '';
-    final guests = bookingData['guests']?.toString() ?? '';
-    final name = bookingData['name'] ?? '';
-    final email = bookingData['email'] ?? '';
-    final phone = bookingData['phone'] ?? '';
-    final id = bookingData['id'] ?? '';
-    final birthDate = bookingData['birthDate'] as DateTime?;
-    final bookingId = bookingData['bookingId'] ?? 'SHM${DateTime.now().millisecondsSinceEpoch}';
+    final hotelName = widget.bookingData['hotelName'] ?? '';
+    final hotelImage = widget.bookingData['hotelImage'] ?? '';
+    final location = widget.bookingData['location'] ?? '';
+    final rating = widget.bookingData['rating']?.toString() ?? '';
+    final price = widget.bookingData['price']?.toString() ?? '';
+    final checkInDate = widget.bookingData['checkInDate'] as DateTime?;
+    final checkOutDate = widget.bookingData['checkOutDate'] as DateTime?;
+    final rooms = widget.bookingData['rooms']?.toString() ?? '';
+    final guests = widget.bookingData['guests']?.toString() ?? '';
+    final name = widget.bookingData['name'] ?? '';
+    final email = widget.bookingData['email'] ?? '';
+    final phone = widget.bookingData['phone'] ?? '';
+    final id = widget.bookingData['id'] ?? '';
+    final birthDate = widget.bookingData['birthDate'] as DateTime?;
+    final bookingId = widget.bookingData['bookingId'] ?? 'SHM${DateTime.now().millisecondsSinceEpoch}';
     final nights = checkInDate != null && checkOutDate != null ? checkOutDate.difference(checkInDate).inDays : 1;
 
     return Scaffold(
@@ -402,6 +418,30 @@ class HotelTicketScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Save to My Trips Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _saveToMyTrips();
+                  },
+                  icon: const Icon(Icons.save, size: 24),
+                  label: const Text(
+                    'حفظ في رحلاتي',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               // Home Button
               SizedBox(
                 width: double.infinity,
@@ -508,6 +548,35 @@ class HotelTicketScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _saveToMyTrips() {
+    final myTripsProvider = Provider.of<MyTripsProvider>(context, listen: false);
+    
+    final trip = Trip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: TripType.hotel,
+      from: widget.bookingData['location'] ?? '',
+      to: widget.bookingData['location'] ?? '',
+      date: DateTime.now(),
+      time: '${DateTime.now().hour}:${DateTime.now().minute}',
+      company: widget.bookingData['hotelName'] ?? '',
+      status: TripStatus.confirmed,
+      price: double.tryParse(widget.bookingData['price']?.toString() ?? '0') ?? 0.0,
+      seatNumber: widget.bookingData['rooms']?.toString() ?? '',
+      ticketNumber: 'HOTEL${DateTime.now().millisecondsSinceEpoch}',
+    );
+    
+    myTripsProvider.addTrip(trip);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('تم حفظ التذكرة في رحلاتي'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 } 
