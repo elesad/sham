@@ -8,6 +8,9 @@ import 'screens/my_trips.dart';
 import 'screens/favorite_screen.dart';
 import 'package:provider/provider.dart';
 import 'models/app_state.dart';
+import 'models/admin_state.dart';
+import 'models/favorites_provider.dart';
+import 'screens/admin_login_screen.dart';
 import 'screens/bus_company_selection_screen.dart';
 import 'screens/bus_seat_selection.dart';
 import 'screens/booking_summary_screen.dart';
@@ -19,8 +22,9 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
         ChangeNotifierProvider(create: (_) => MyTripsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminState()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
       ],
       child: const ShamApp(),
     ),
@@ -85,11 +89,6 @@ class _ShamAppState extends State<ShamApp> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-            ),
-            textStyle: const TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -160,7 +159,10 @@ class _MainNavigationState extends State<MainNavigation> {
       AccountScreen(onLocaleChange: widget.onLocaleChange, onToggleDarkMode: widget.onToggleDarkMode),
     ];
     return Scaffold(
-      body: pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {

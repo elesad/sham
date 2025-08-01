@@ -60,7 +60,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       locale: const Locale('ar'),
     );
     if (picked != null) {
-    setState(() {
+      setState(() {
         _birthDate = picked;
       });
     }
@@ -85,8 +85,8 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
         'birthDate': _birthDate,
       };
       Navigator.push(
-                    context,
-                    MaterialPageRoute(
+        context,
+        MaterialPageRoute(
           builder: (context) => HotelOtpScreen(bookingData: bookingData),
         ),
       );
@@ -97,241 +97,403 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
   Widget build(BuildContext context) {
     final nights = widget.checkOutDate.difference(widget.checkInDate).inDays;
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('حجز الفندق'),
+        title: const Text(
+          'حجز الفندق',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: const Color(0xFF1E3A8A),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ملخص بيانات الفندق
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
-                    child: Image.network(
-                      widget.hotelImage,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(Icons.hotel, size: 80, color: Colors.grey),
+            children: [
+              // Hotel Info Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.hotelName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        const SizedBox(height: 4),
-                    Row(
-                            children: [
-                            Icon(Icons.location_on, size: 16, color: Colors.grey[700]),
-                            Text(widget.location, style: TextStyle(color: Colors.grey[700])),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                                children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Text(widget.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text('ابتداءً من ${widget.price} ل.س', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
-            const SizedBox(height: 16),
-            // ملخص بيانات البحث
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+                child: Row(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A8A).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.hotel,
+                        color: Color(0xFF1E3A8A),
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.hotelName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.location,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.rating.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'ابتداءً من ${widget.price} ل.س',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Color(0xFF1E3A8A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Booking Summary Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'ملخص الحجز',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today, size: 16),
-                        const SizedBox(width: 4),
-                        Text('الدخول: ${DateFormat('yyyy/MM/dd').format(widget.checkInDate)}'),
-                        const SizedBox(width: 12),
-                        Text('الخروج: ${DateFormat('yyyy/MM/dd').format(widget.checkOutDate)}'),
+                        Expanded(
+                          child: _buildSummaryItem(
+                            'الدخول',
+                            DateFormat('yyyy/MM/dd').format(widget.checkInDate),
+                            Icons.login,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildSummaryItem(
+                            'الخروج',
+                            DateFormat('yyyy/MM/dd').format(widget.checkOutDate),
+                            Icons.logout,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.bed, size: 16),
-                        const SizedBox(width: 4),
-                        Text('عدد الغرف: ${widget.rooms}'),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.person, size: 16),
-                        const SizedBox(width: 4),
-                        Text('عدد الأشخاص: ${widget.guests}'),
-                    const SizedBox(width: 12),
-                        Text('عدد الليالي: $nights'),
+                        Expanded(
+                          child: _buildSummaryItem(
+                            'الغرف',
+                            '${widget.rooms}',
+                            Icons.bed,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildSummaryItem(
+                            'الأشخاص',
+                            '${widget.guests}',
+                            Icons.people,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildSummaryItem(
+                            'الليالي',
+                            '$nights',
+                            Icons.nights_stay,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+
+              // Booking Form Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-            const SizedBox(height: 24),
-            // نموذج بيانات الحجز
-            Form(
-              key: _formKey,
-                child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                  // الجنسية واختيار البلد إذا لم يكن سوري
-                  Row(
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _nationality,
-                          decoration: const InputDecoration(
-                            labelText: 'الجنسية',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: _countries.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                          onChanged: (val) => setState(() => _nationality = val ?? 'سوريا'),
+                      const Text(
+                        'معلومات الحجز',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E3A8A),
                         ),
                       ),
-                      if (_nationality != 'سوريا')
-                        Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: Icon(Icons.flag, color: Colors.purple.shade700),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // الاسم الكامل مقابل رقم الهوية/الجواز
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'الاسم الكامل',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال الاسم' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: DropdownButtonFormField<String>(
-                                value: _docType,
-                                decoration: const InputDecoration(
-                                  labelText: 'نوع الوثيقة',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: const [
-                                  DropdownMenuItem(value: 'id', child: Text('هوية')),
-                                  DropdownMenuItem(value: 'passport', child: Text('جواز سفر')),
-                                ],
-                                onChanged: (val) => setState(() => _docType = val ?? 'id'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              flex: 3,
-                              child: TextFormField(
-                                controller: _idController,
-                                decoration: InputDecoration(
-                                  labelText: _docType == 'id' ? 'رقم الهوية' : 'رقم الجواز',
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: const Icon(Icons.arrow_drop_down),
-                                ),
-                                validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الوثيقة' : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // البريد مقابل الهاتف
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'البريد الإلكتروني',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال البريد الإلكتروني' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _phoneController,
-                          decoration: const InputDecoration(
-                            labelText: 'رقم الهاتف',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.phone,
-                          validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الهاتف' : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // تاريخ الميلاد
-                  GestureDetector(
-                    onTap: () => _selectBirthDate(context),
-                    child: AbsorbPointer(
-                      child: TextFormField(
+                      const SizedBox(height: 16),
+
+                      // Nationality
+                      DropdownButtonFormField<String>(
+                        value: _nationality,
                         decoration: const InputDecoration(
-                          labelText: 'تاريخ الميلاد',
+                          labelText: 'الجنسية',
                           border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.calendar_today),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
-                        controller: TextEditingController(
-                          text: _birthDate == null ? '' : '${_birthDate!.year}/${_birthDate!.month}/${_birthDate!.day}',
-                        ),
-                        validator: (_) {
-                          if (_birthDate == null) return 'يرجى اختيار تاريخ الميلاد';
-                          return null;
-                        },
+                        items: _countries.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                        onChanged: (val) => setState(() => _nationality = val ?? 'سوريا'),
                       ),
+                      const SizedBox(height: 12),
+
+                      // Full Name
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'الاسم الكامل',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال الاسم' : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Email
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'البريد الإلكتروني',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال البريد الإلكتروني' : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Document Type and Number
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: DropdownButtonFormField<String>(
+                              value: _docType,
+                              decoration: const InputDecoration(
+                                labelText: 'نوع الوثيقة',
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'id', child: Text('هوية')),
+                                DropdownMenuItem(value: 'passport', child: Text('جواز سفر')),
+                              ],
+                              onChanged: (val) => setState(() => _docType = val ?? 'id'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 3,
+                            child: TextFormField(
+                              controller: _idController,
+                              decoration: InputDecoration(
+                                labelText: _docType == 'id' ? 'رقم الهوية' : 'رقم الجواز',
+                                border: const OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              ),
+                              validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الوثيقة' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Phone Number
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'رقم الهاتف',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) => value == null || value.isEmpty ? 'الرجاء إدخال رقم الهاتف' : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Birth Date
+                      GestureDetector(
+                        onTap: () => _selectBirthDate(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text(
+                                _birthDate != null
+                                    ? DateFormat('yyyy/MM/dd').format(_birthDate!)
+                                    : 'تاريخ الميلاد',
+                                style: TextStyle(
+                                  color: _birthDate != null ? Colors.black : Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Confirm Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _onConfirmBooking,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E3A8A),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  ElevatedButton(
-                    onPressed: _onConfirmBooking,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple.shade700,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: const Text(
+                    'تأكيد الحجز',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    child: const Text('تأكيد الحجز', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
-                ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: const Color(0xFF1E3A8A),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.grey,
               ),
             ),
-                                  ],
-                                ),
-                              ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
